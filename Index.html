@@ -177,11 +177,102 @@
         padding: 12px 0;
       }
 
-      /* ── MAIN GRID SYSTEM ── */
+      /* ── SEARCH & TOOLBAR ── */
+      .toolbar {
+        background: var(--card);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        margin-bottom: 20px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .search-wrap {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+      }
+
+      .search-wrap input {
+        width: 100%;
+        padding: 10px 14px 10px 36px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.95em;
+        box-sizing: border-box;
+        background: #f8f9fa;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      .search-wrap input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 0.9em;
+        pointer-events: none;
+      }
+
+      .toolbar-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .btn-toolbar {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 8px 14px;
+        font-size: 0.85em;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+        color: #555;
+        white-space: nowrap;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .btn-toolbar:hover {
+        background: #e8f0fe;
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .teacher-count {
+        font-size: 0.85em;
+        color: #999;
+        white-space: nowrap;
+      }
+
+      /* ── SINGLE-COLUMN CARD LIST ── */
       .app-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .no-results {
+        text-align: center;
+        color: #999;
+        font-size: 0.95em;
+        padding: 40px 20px;
+        background: var(--card);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
       }
 
       /* TEACHER CARD */
@@ -221,6 +312,17 @@
         margin-top: 2px;
       }
 
+      .teacher-stats {
+        font-size: 0.78em;
+        color: #aaa;
+        margin-top: 3px;
+      }
+
+      .teacher-stats .stat-broken {
+        color: var(--broken);
+        font-weight: 500;
+      }
+
       .collapse-icon {
         font-size: 0.75em;
         color: #aaa;
@@ -244,7 +346,7 @@
       /* SLOT GRID inside Teacher Card */
       .slot-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         gap: 8px;
         overflow: hidden;
         max-height: 2000px;
@@ -302,7 +404,7 @@
         padding: 25px;
         border-radius: 8px;
         width: 90%;
-        max-width: 440px;
+        max-width: 480px;
         max-height: 90vh;
         overflow-y: auto;
         box-shadow: 0 4px 12px rgba(0,0,0,0.25);
@@ -330,45 +432,145 @@
         font-size: 0.9em;
       }
 
-      /* REPLACEMENT POOL CONTROLS */
+      /* REPLACEMENT POOL REDESIGNED */
+      .pool-search-wrap {
+        position: relative;
+        margin-top: 8px;
+      }
+
+      .pool-search-wrap input {
+        width: 100%;
+        padding: 10px 14px 10px 36px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 0.9em;
+        box-sizing: border-box;
+        background: #f8f9fa;
+        transition: border-color 0.2s, background 0.2s;
+        margin: 0;
+      }
+
+      .pool-search-wrap input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+      }
+
+      .pool-search-wrap .search-icon {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 0.9em;
+        pointer-events: none;
+      }
+
       .pool-toolbar {
         display: flex;
         gap: 8px;
-        margin-top: 8px;
+        margin-top: 6px;
         align-items: center;
+        justify-content: space-between;
       }
 
-      .pool-search-input {
-        flex: 1;
-        padding: 8px 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-family: inherit;
-        box-sizing: border-box;
+      .pool-count {
+        font-size: 0.78em;
+        color: #999;
       }
 
       .pool-sort-select {
-        padding: 8px 8px;
+        padding: 6px 8px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        font-size: 0.85em;
+        font-size: 0.8em;
         background: #f8f9fa;
         cursor: pointer;
         font-family: inherit;
         flex-shrink: 0;
       }
 
-      .pool-count {
-        font-size: 0.78em;
-        color: #999;
-        margin-top: 4px;
-        text-align: right;
+      .pool-list {
+        margin-top: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fafafa;
       }
 
-      #replacementSelect {
-        height: 160px;
-        margin-top: 6px;
+      .pool-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background 0.12s;
+        gap: 10px;
+      }
+
+      .pool-item:last-child { border-bottom: none; }
+
+      .pool-item:hover { background: #e8f0fe; }
+
+      .pool-item.selected {
+        background: #d2e3fc;
+        font-weight: 500;
+      }
+
+      .pool-item-radio {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ccc;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.15s;
+      }
+
+      .pool-item.selected .pool-item-radio {
+        border-color: var(--primary);
+      }
+
+      .pool-item.selected .pool-item-radio::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
+        border-radius: 50%;
+      }
+
+      .pool-item-details {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .pool-item-serial {
+        font-size: 0.9em;
+        color: #333;
+        font-family: 'Roboto Mono', monospace;
+        word-break: break-all;
+      }
+
+      .pool-item-model {
+        font-size: 0.78em;
+        color: #888;
+        margin-top: 1px;
+      }
+
+      .pool-empty {
+        text-align: center;
+        color: #999;
+        font-size: 0.85em;
+        padding: 20px;
+      }
+
+      /* Hidden select for form submission */
+      #replacementSerial {
+        display: none;
       }
 
       .btn-group {
@@ -392,6 +594,24 @@
 
       /* LOADING */
       #loader { text-align: center; margin-top: 50px; color: #666; }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 600px) {
+        body { padding: 12px; }
+
+        .toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .toolbar-actions {
+          justify-content: center;
+        }
+
+        .teacher-count {
+          text-align: center;
+        }
+      }
     </style>
   </head>
   <body>
@@ -423,6 +643,19 @@
       </div>
     </div>
 
+    <!-- ── SEARCH & TOOLBAR ── -->
+    <div class="toolbar" id="toolbar" style="display:none;">
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="teacherSearch" placeholder="Search for a teacher..." oninput="onTeacherSearch()" autocomplete="off">
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-toolbar" onclick="expandAll()">Expand All</button>
+        <button class="btn-toolbar" onclick="collapseAll()">Collapse All</button>
+      </div>
+      <span class="teacher-count" id="teacherCount"></span>
+    </div>
+
     <div id="loader">Loading Inventory...</div>
     <div id="app" class="app-container" style="display:none;"></div>
 
@@ -434,6 +667,7 @@
 
         <form id="updateForm">
           <input type="hidden" id="rowIndex" name="rowIndex">
+          <input type="hidden" id="replacementSerial" name="replacementSerial" value="">
 
           <label>Status</label>
           <select id="statusSelect" name="status" onchange="toggleReplacement()">
@@ -444,15 +678,19 @@
           <div id="replacementContainer" style="display:none;">
             <label>Assign Replacement (From Pool)</label>
 
-            <div class="pool-toolbar">
+            <div class="pool-search-wrap">
+              <span class="search-icon">&#128269;</span>
               <input
                 type="text"
-                class="pool-search-input"
                 id="poolSearch"
-                placeholder="Search serial or model..."
+                placeholder="Search by serial or model..."
                 oninput="filterPool()"
                 autocomplete="off"
               >
+            </div>
+
+            <div class="pool-toolbar">
+              <span class="pool-count" id="poolCount"></span>
               <select class="pool-sort-select" id="poolSort" onchange="filterPool()">
                 <option value="serial-asc">Serial A-Z</option>
                 <option value="serial-desc">Serial Z-A</option>
@@ -461,11 +699,7 @@
               </select>
             </div>
 
-            <div class="pool-count" id="poolCount"></div>
-
-            <select id="replacementSelect" name="replacementSerial">
-              <option value="">-- Select Available Device --</option>
-            </select>
+            <div class="pool-list" id="poolList"></div>
           </div>
 
           <div class="btn-group">
@@ -480,6 +714,7 @@
       var globalData      = {};
       var globalPool      = []; // Array of { serial, model }
       var globalTeachers  = {}; // { "TeacherName": "RoomNumber" }
+      var selectedReplacement = ''; // Track selected replacement serial
 
       // ── INITIAL LOAD ──
       window.onload = function() {
@@ -515,7 +750,7 @@
           '</tr></thead><tbody>';
 
         keys.forEach(function(name) {
-          var room = globalTeachers[name] || '—';
+          var room = globalTeachers[name] || '\u2014';
           html += '<tr>' +
             '<td>' + escHtml(name) + '</td>' +
             '<td>' + escHtml(room) + '</td>' +
@@ -569,7 +804,7 @@
             document.getElementById('inputRoomNumber').value  = '';
 
             var action = result.status === 'added' ? 'Added' : 'Updated';
-            setMgmtMsg(action + ': ' + result.teacher + (result.room ? ' — Room ' + result.room : ''), 'success');
+            setMgmtMsg(action + ': ' + result.teacher + (result.room ? ' \u2014 Room ' + result.room : ''), 'success');
           })
           .withFailureHandler(function(err) {
             btn.disabled = false;
@@ -585,6 +820,66 @@
         el.className = 'mgmt-msg' + (type ? ' ' + type : '');
       }
 
+      // ── TEACHER SEARCH ──
+      function onTeacherSearch() {
+        var query = document.getElementById('teacherSearch').value.toLowerCase().trim();
+        var cards = document.querySelectorAll('.teacher-card');
+        var shown = 0;
+        var total = cards.length;
+
+        cards.forEach(function(card) {
+          var name = card.getAttribute('data-teacher').toLowerCase();
+          var room = (card.getAttribute('data-room') || '').toLowerCase();
+          if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1) {
+            card.style.display = '';
+            shown++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Update no-results message
+        var noResults = document.getElementById('noResults');
+        if (shown === 0 && total > 0) {
+          if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.id = 'noResults';
+            noResults.className = 'no-results';
+            document.getElementById('app').appendChild(noResults);
+          }
+          noResults.innerText = 'No teachers found matching "' + document.getElementById('teacherSearch').value.trim() + '"';
+          noResults.style.display = '';
+        } else if (noResults) {
+          noResults.style.display = 'none';
+        }
+
+        updateTeacherCount(shown, total);
+      }
+
+      function updateTeacherCount(shown, total) {
+        var el = document.getElementById('teacherCount');
+        if (shown === total) {
+          el.innerText = total + ' teacher' + (total !== 1 ? 's' : '');
+        } else {
+          el.innerText = shown + ' of ' + total + ' teacher' + (total !== 1 ? 's' : '');
+        }
+      }
+
+      // ── COLLAPSE / EXPAND ALL ──
+      function collapseAll() {
+        var cards = document.querySelectorAll('.teacher-card');
+        cards.forEach(function(card) {
+          card.classList.add('collapsed');
+        });
+      }
+
+      function expandAll() {
+        var cards = document.querySelectorAll('.teacher-card');
+        cards.forEach(function(card) {
+          card.classList.remove('collapsed');
+        });
+      }
+
       // ── RENDER TEACHER CARDS ──
       function renderCards() {
         var app = document.getElementById('app');
@@ -595,6 +890,9 @@
         teachers.forEach(function(teacher) {
           var card = document.createElement('div');
           card.className = 'teacher-card';
+          card.setAttribute('data-teacher', teacher);
+          var room = globalTeachers[teacher] || '';
+          card.setAttribute('data-room', room);
 
           // --- Collapsible Header ---
           var header = document.createElement('div');
@@ -608,7 +906,6 @@
           nameEl.innerText = teacher;
           info.appendChild(nameEl);
 
-          var room = globalTeachers[teacher];
           if (room) {
             var roomEl = document.createElement('div');
             roomEl.className = 'teacher-room';
@@ -616,9 +913,21 @@
             info.appendChild(roomEl);
           }
 
+          // Stats line
+          var devices = globalData[teacher];
+          var brokenCount = devices.filter(function(d) { return d.status === 'Broken'; }).length;
+          var statsEl = document.createElement('div');
+          statsEl.className = 'teacher-stats';
+          var statsText = devices.length + ' device' + (devices.length !== 1 ? 's' : '');
+          if (brokenCount > 0) {
+            statsText += ' \u2022 <span class="stat-broken">' + brokenCount + ' broken</span>';
+          }
+          statsEl.innerHTML = statsText;
+          info.appendChild(statsEl);
+
           var icon = document.createElement('span');
           icon.className = 'collapse-icon';
-          icon.innerHTML = '&#9660;'; // ▼
+          icon.innerHTML = '&#9660;'; // down arrow
 
           header.appendChild(info);
           header.appendChild(icon);
@@ -630,11 +939,11 @@
           var grid = document.createElement('div');
           grid.className = 'slot-grid';
 
-          var devices = globalData[teacher].sort(function(a, b) {
+          var sortedDevices = devices.sort(function(a, b) {
             return parseInt(a.slot.replace('Slot ', '')) - parseInt(b.slot.replace('Slot ', ''));
           });
 
-          devices.forEach(function(device) {
+          sortedDevices.forEach(function(device) {
             var chip = document.createElement('div');
             chip.className = 'device-chip' + (device.status === 'Broken' ? ' broken' : '');
             chip.innerHTML = '<span class="slot-num">' + device.slot + '</span>' + device.serial.substring(0, 6) + '...';
@@ -647,7 +956,10 @@
         });
 
         document.getElementById('loader').style.display = 'none';
-        app.style.display = 'grid';
+        document.getElementById('toolbar').style.display = 'flex';
+        app.style.display = 'flex';
+
+        updateTeacherCount(teachers.length, teachers.length);
       }
 
       // ── DEVICE MODAL ──
@@ -662,6 +974,8 @@
         // Reset pool controls
         document.getElementById('poolSearch').value = '';
         document.getElementById('poolSort').value = 'serial-asc';
+        selectedReplacement = '';
+        document.getElementById('replacementSerial').value = '';
 
         filterPool();
         toggleReplacement();
@@ -688,19 +1002,47 @@
           }
         });
 
-        var repSelect = document.getElementById('replacementSelect');
-        var prevValue = repSelect.value;
+        var poolList = document.getElementById('poolList');
+        poolList.innerHTML = '';
 
-        repSelect.innerHTML = '<option value="">-- Select Available Device --</option>';
-        filtered.forEach(function(item) {
-          var opt = document.createElement('option');
-          opt.value    = item.serial;
-          opt.innerText = item.serial + '  (' + item.model + ')';
-          repSelect.appendChild(opt);
-        });
+        if (filtered.length === 0) {
+          poolList.innerHTML = '<div class="pool-empty">' +
+            (query ? 'No devices matching "' + escHtml(query) + '"' : 'No available devices') +
+            '</div>';
+        } else {
+          filtered.forEach(function(item) {
+            var row = document.createElement('div');
+            row.className = 'pool-item' + (selectedReplacement === item.serial ? ' selected' : '');
+            row.setAttribute('data-serial', item.serial);
 
-        if (prevValue && filtered.some(function(item) { return item.serial === prevValue; })) {
-          repSelect.value = prevValue;
+            row.innerHTML =
+              '<div class="pool-item-radio"></div>' +
+              '<div class="pool-item-details">' +
+                '<div class="pool-item-serial">' + escHtml(item.serial) + '</div>' +
+                '<div class="pool-item-model">' + escHtml(item.model) + '</div>' +
+              '</div>';
+
+            row.onclick = function() {
+              // Toggle selection
+              if (selectedReplacement === item.serial) {
+                selectedReplacement = '';
+              } else {
+                selectedReplacement = item.serial;
+              }
+              document.getElementById('replacementSerial').value = selectedReplacement;
+              // Update visual state
+              var items = poolList.querySelectorAll('.pool-item');
+              items.forEach(function(el) {
+                if (el.getAttribute('data-serial') === selectedReplacement) {
+                  el.classList.add('selected');
+                } else {
+                  el.classList.remove('selected');
+                }
+              });
+            };
+
+            poolList.appendChild(row);
+          });
         }
 
         var total = globalPool.length;
@@ -718,7 +1060,8 @@
           container.style.display = 'block';
         } else {
           container.style.display = 'none';
-          document.getElementById('replacementSelect').value = '';
+          selectedReplacement = '';
+          document.getElementById('replacementSerial').value = '';
         }
       }
 
@@ -739,6 +1082,7 @@
           btn.disabled  = false;
           document.getElementById('loader').style.display = 'block';
           document.getElementById('app').style.display    = 'none';
+          document.getElementById('toolbar').style.display = 'none';
           google.script.run.withSuccessHandler(renderApp).getAppData();
         }).submitUpdate(form);
       }
