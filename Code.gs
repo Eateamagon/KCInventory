@@ -1,0 +1,97 @@
+// --- CONFIGURATION ---
+var ALLOWED_USERS = ['etruslow@waynesboro.k12.va.us', 'ahenshaw@waynesboro.k12.va.us'];
+var SHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+
+function doGet() {
+  var user = Session.getActiveUser().getEmail();
+  
+  // Security Check
+  if (ALLOWED_USERS.indexOf(user) === -1) {
+    return HtmlService.createHtmlOutput("<h3>Access Denied</h3><p>You are not authorized to view this application.</p>");
+  }
+  
+  return HtmlService.createTemplateFromFile('Index')
+      .evaluate()
+      .setTitle('KCMS Chromebook Tracker')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// --- API: GET DATA ---
+function getAppData() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  
+  // 1. Get Inventory
+  var invSheet = ss.getSheetByName("Inventory");
+  // Assumes headers in row 1. Data starts row 2.
+  // Columns: Teacher(A), Model(B), Slot(C), Serial(D), Status(E), ReplaceSerial(F), LastAudit(G)
+  var invData = invSheet.getRange(2, 1, invSheet.getLastRow()-1, 7).getValues();
+  
+  // 2. Get Replacement Pool
+  var poolSheet = ss.getSheetByName("Replacement_Pool");
+  // Columns: Serial(A), Model(B), Status(C)
+  var poolData = poolSheet.getRange(2, 1, poolSheet.getLastRow()-1, 3).getValues();
+  
+  // Filter for only AVAILABLE replacements
+  var availableReplacements = poolData
+    .filter(function(row) { return row[2] === "Available"; })
+    .map(function(row) { return row[0]; }); // Just return the serial numbers
+
+  // Process Inventory into a nested object: { "TeacherName": [ {row data}, {row data} ] }
+  var groupedData = {};
+  invData.forEach(function(row, index) {
+    var teacher = row[0];
+    if (!groupedData[teacher]) groupedData[teacher] = [];
+    
+    groupedData[teacher].push({
+      rowIndex: index + 2, // Store real sheet row number for updates
+      teacher: row[0],
+      model: row[1],
+      slot: row[2],
+      serial: row[3],
+      status: row[4],
+      replacement: row[5]
+    });
+  });
+
+  return {
+    inventory: groupedData,
+    replacements: availableReplacements,
+    user: Session.getActiveUser().getEmail()
+  };
+}
+
+// --- API: HANDLE UPDATE ---
+function submitUpdate(formObject) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var invSheet = ss.getSheetByName("Inventory");
+  var poolSheet = ss.getSheetByName("Replacement_Pool");
+  
+  var rowIndex = parseInt(formObject.rowIndex);
+  var status = formObject.status;
+  var newSerial = formObject.replacementSerial;
+  
+  // 1. Update Inventory Row
+  // Column E is Status (5), Column F is Replacement (6), Column G is Audit (7)
+  invSheet.getRange(rowIndex, 5).setValue(status);
+  invSheet.getRange(rowIndex, 7).setValue(new Date()); // Timestamp
+  
+  if (newSerial && newSerial !== "") {
+    invSheet.getRange(rowIndex, 6).setValue(newSerial);
+    
+    // 2. Update Pool Status (Find the replacement and mark Deployed)
+    var poolData = poolSheet.getDataRange().getValues();
+    for (var i = 0; i < poolData.length; i++) {
+      if (poolData[i][0] == newSerial) { // Column A is Serial
+        poolSheet.getRange(i + 1, 3).setValue("Deployed"); // Column C is Status
+        break;
+      }
+    }
+  }
+  
+  return "Success";
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
