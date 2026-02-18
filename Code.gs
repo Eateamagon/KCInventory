@@ -126,29 +126,32 @@ function submitUpdate(formObject) {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var invSheet = ss.getSheetByName("Inventory");
   var poolSheet = ss.getSheetByName("Replacement_Pool");
-  
+
   var rowIndex = parseInt(formObject.rowIndex);
   var status = formObject.status;
   var newSerial = formObject.replacementSerial;
-  
+  var isCustom = formObject.isCustomSerial === 'true';
+
   // 1. Update Inventory Row
   // Column E is Status (5), Column F is Replacement (6), Column G is Audit (7)
   invSheet.getRange(rowIndex, 5).setValue(status);
   invSheet.getRange(rowIndex, 7).setValue(new Date()); // Timestamp
-  
+
   if (newSerial && newSerial !== "") {
     invSheet.getRange(rowIndex, 6).setValue(newSerial);
-    
-    // 2. Update Pool Status (Find the replacement and mark Deployed)
-    var poolData = poolSheet.getDataRange().getValues();
-    for (var i = 0; i < poolData.length; i++) {
-      if (poolData[i][0] == newSerial) { // Column A is Serial
-        poolSheet.getRange(i + 1, 3).setValue("Deployed"); // Column C is Status
-        break;
+
+    // 2. Only mark as Deployed in pool if serial came from the pool (not custom)
+    if (!isCustom) {
+      var poolData = poolSheet.getDataRange().getValues();
+      for (var i = 0; i < poolData.length; i++) {
+        if (poolData[i][0] == newSerial) { // Column A is Serial
+          poolSheet.getRange(i + 1, 3).setValue("Deployed"); // Column C is Status
+          break;
+        }
       }
     }
   }
-  
+
   return "Success";
 }
 
