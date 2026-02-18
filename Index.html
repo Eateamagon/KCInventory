@@ -3,708 +3,175 @@
   <head>
     <base target="_top">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        --primary: #1a73e8;
-        --bg: #f1f3f4;
-        --card: #ffffff;
-        --broken: #d93025;
-        --good: #1e8e3e;
-      }
-
-      body {
-        font-family: 'Roboto', sans-serif;
-        background-color: var(--bg);
-        margin: 0;
-        padding: 20px;
-      }
-
-      /* ── TEACHER MANAGEMENT PANEL ── */
-      .mgmt-panel {
-        background: var(--card);
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-        margin-bottom: 24px;
-        overflow: hidden;
-      }
-
-      .mgmt-panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 18px;
-        cursor: pointer;
-        user-select: none;
-        border-bottom: 1px solid #eee;
-        font-weight: 500;
-        font-size: 1em;
-        color: #333;
-      }
-
-      .mgmt-panel-header:hover { color: var(--primary); }
-
-      .mgmt-panel-header .collapse-icon {
-        font-size: 0.75em;
-        color: #aaa;
-        transition: transform 0.25s ease;
-      }
-
-      .mgmt-panel.collapsed .mgmt-panel-header .collapse-icon {
-        transform: rotate(-90deg);
-      }
-
-      .mgmt-panel.collapsed .mgmt-panel-header {
-        border-bottom-color: transparent;
-      }
-
-      .mgmt-panel-body {
-        overflow: hidden;
-        max-height: 800px;
-        opacity: 1;
-        transition: max-height 0.3s ease, opacity 0.25s ease;
-        padding: 18px;
-      }
-
-      .mgmt-panel.collapsed .mgmt-panel-body {
-        max-height: 0;
-        opacity: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-      }
-
-      .mgmt-form {
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-      }
-
-      .mgmt-form-field {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        flex: 1;
-        min-width: 140px;
-      }
-
-      .mgmt-form-field label {
-        font-size: 0.85em;
-        color: #555;
-        font-weight: 500;
-        margin: 0;
-      }
-
-      .mgmt-form-field input {
-        padding: 9px 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-family: inherit;
-        font-size: 0.9em;
-        box-sizing: border-box;
-        width: 100%;
-        margin: 0;
-      }
-
-      .btn-add-teacher {
-        background: var(--primary);
-        color: white;
-        padding: 9px 18px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        font-family: inherit;
-        font-size: 0.9em;
-        white-space: nowrap;
-        align-self: flex-end;
-      }
-
-      .btn-add-teacher:disabled { opacity: 0.6; cursor: not-allowed; }
-
-      .mgmt-msg {
-        font-size: 0.85em;
-        padding: 6px 0;
-        min-height: 1.2em;
-      }
-
-      .mgmt-msg.success { color: var(--good); }
-      .mgmt-msg.error   { color: var(--broken); }
-
-      /* Teacher list table */
-      .teacher-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9em;
-      }
-
-      .teacher-table th {
-        text-align: left;
-        padding: 8px 10px;
-        border-bottom: 2px solid #eee;
-        color: #555;
-        font-weight: 500;
-      }
-
-      .teacher-table td {
-        padding: 8px 10px;
-        border-bottom: 1px solid #f0f0f0;
-        color: #333;
-        vertical-align: middle;
-      }
-
-      .teacher-table tr:last-child td { border-bottom: none; }
-
-      .teacher-table tbody tr:hover { background: #f8f9fa; }
-
-      .btn-edit-teacher {
-        background: none;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 4px 10px;
-        font-size: 0.8em;
-        cursor: pointer;
-        color: var(--primary);
-        font-family: inherit;
-      }
-
-      .btn-edit-teacher:hover { background: #e8f0fe; }
-
-      .no-teachers-msg {
-        color: #999;
-        font-size: 0.9em;
-        text-align: center;
-        padding: 12px 0;
-      }
-
-      /* ── SEARCH & TOOLBAR ── */
-      .toolbar {
-        background: var(--card);
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-        margin-bottom: 20px;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .search-wrap {
-        flex: 1;
-        min-width: 200px;
-        position: relative;
-      }
-
-      .search-wrap input {
-        width: 100%;
-        padding: 10px 14px 10px 36px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 0.95em;
-        box-sizing: border-box;
-        background: #f8f9fa;
-        transition: border-color 0.2s, background 0.2s;
-      }
-
-      .search-wrap input:focus {
-        outline: none;
-        border-color: var(--primary);
-        background: #fff;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 11px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        font-size: 0.9em;
-        pointer-events: none;
-      }
-
-      .toolbar-actions {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-
-      .btn-toolbar {
-        background: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 8px 14px;
-        font-size: 0.85em;
-        cursor: pointer;
-        font-family: inherit;
-        font-weight: 500;
-        color: #555;
-        white-space: nowrap;
-        transition: background 0.15s, color 0.15s;
-      }
-
-      .btn-toolbar:hover {
-        background: #e8f0fe;
-        color: var(--primary);
-        border-color: var(--primary);
-      }
-
-      .teacher-count {
-        font-size: 0.85em;
-        color: #999;
-        white-space: nowrap;
-      }
-
-      /* ── SINGLE-COLUMN CARD LIST ── */
-      .app-container {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        max-width: 900px;
-        margin: 0 auto;
-      }
-
-      .no-results {
-        text-align: center;
-        color: #999;
-        font-size: 0.95em;
-        padding: 40px 20px;
-        background: var(--card);
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      }
-
-      /* TEACHER CARD */
-      .teacher-card {
-        background: var(--card);
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-        padding: 15px;
-      }
-
-      /* TEACHER HEADER - clickable to collapse */
-      .teacher-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-        cursor: pointer;
-        user-select: none;
-      }
-
-      .teacher-header:hover .teacher-name { color: var(--primary); }
-
-      .teacher-info { flex: 1; }
-
-      .teacher-name {
-        font-weight: 500;
-        font-size: 1.1em;
-        color: #333;
-        transition: color 0.15s;
-      }
-
-      .teacher-room {
-        font-size: 0.8em;
-        color: #888;
-        margin-top: 2px;
-      }
-
-      .teacher-stats {
-        font-size: 0.78em;
-        color: #aaa;
-        margin-top: 3px;
-      }
-
-      .teacher-stats .stat-broken {
-        color: var(--broken);
-        font-weight: 500;
-      }
-
-      .collapse-icon {
-        font-size: 0.75em;
-        color: #aaa;
-        transition: transform 0.25s ease;
-        flex-shrink: 0;
-        margin-left: 8px;
-        margin-top: 4px;
-      }
-
-      /* Collapsed state */
-      .teacher-card.collapsed .collapse-icon {
-        transform: rotate(-90deg);
-      }
-
-      .teacher-card.collapsed .teacher-header {
-        border-bottom-color: transparent;
-        margin-bottom: 0;
-        padding-bottom: 0;
-      }
-
-      /* SLOT GRID inside Teacher Card */
-      .slot-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 8px;
-        overflow: hidden;
-        max-height: 2000px;
-        opacity: 1;
-        transition: max-height 0.3s ease, opacity 0.25s ease;
-      }
-
-      .teacher-card.collapsed .slot-grid {
-        max-height: 0;
-        opacity: 0;
-      }
-
-      /* INDIVIDUAL DEVICE */
-      .device-chip {
-        background: #e8f0fe;
-        color: var(--primary);
-        padding: 8px 4px;
-        border-radius: 4px;
-        text-align: center;
-        cursor: pointer;
-        font-size: 0.85em;
-        user-select: none;
-        transition: transform 0.1s;
-      }
-
-      .device-chip:active { transform: scale(0.95); }
-
-      .device-chip.broken {
-        background: #fce8e6;
-        color: var(--broken);
-        border: 1px solid var(--broken);
-      }
-
-      .device-chip .slot-num {
-        display: block;
-        font-weight: bold;
-        font-size: 0.8em;
-        opacity: 0.7;
-      }
-
-      /* ── DEVICE MODAL ── */
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 100;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .modal {
-        background: white;
-        padding: 25px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 480px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      }
-
-      .modal h2 { margin-top: 0; }
-
-      /* FORMS */
-      label {
-        display: block;
-        margin-top: 15px;
-        font-size: 0.9em;
-        color: #555;
-        font-weight: 500;
-      }
-
-      select, input[type="text"] {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-family: inherit;
-        font-size: 0.9em;
-      }
-
-      /* REPLACEMENT POOL REDESIGNED */
-      .pool-search-wrap {
-        position: relative;
-        margin-top: 8px;
-      }
-
-      .pool-search-wrap input {
-        width: 100%;
-        padding: 10px 14px 10px 36px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 0.9em;
-        box-sizing: border-box;
-        background: #f8f9fa;
-        transition: border-color 0.2s, background 0.2s;
-        margin: 0;
-      }
-
-      .pool-search-wrap input:focus {
-        outline: none;
-        border-color: var(--primary);
-        background: #fff;
-      }
-
-      .pool-search-wrap .search-icon {
-        position: absolute;
-        left: 11px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        font-size: 0.9em;
-        pointer-events: none;
-      }
-
-      .pool-toolbar {
-        display: flex;
-        gap: 8px;
-        margin-top: 6px;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .pool-count {
-        font-size: 0.78em;
-        color: #999;
-      }
-
-      .pool-sort-select {
-        padding: 6px 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.8em;
-        background: #f8f9fa;
-        cursor: pointer;
-        font-family: inherit;
-        flex-shrink: 0;
-      }
-
-      .pool-list {
-        margin-top: 8px;
-        max-height: 220px;
-        overflow-y: auto;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: #fafafa;
-      }
-
-      .pool-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 12px;
-        cursor: pointer;
-        border-bottom: 1px solid #eee;
-        transition: background 0.12s;
-        gap: 10px;
-      }
-
-      .pool-item:last-child { border-bottom: none; }
-
-      .pool-item:hover { background: #e8f0fe; }
-
-      .pool-item.selected {
-        background: #d2e3fc;
-        font-weight: 500;
-      }
-
-      .pool-item-radio {
-        width: 16px;
-        height: 16px;
-        border: 2px solid #ccc;
-        border-radius: 50%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: border-color 0.15s;
-      }
-
-      .pool-item.selected .pool-item-radio {
-        border-color: var(--primary);
-      }
-
-      .pool-item.selected .pool-item-radio::after {
-        content: '';
-        width: 8px;
-        height: 8px;
-        background: var(--primary);
-        border-radius: 50%;
-      }
-
-      .pool-item-details {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .pool-item-serial {
-        font-size: 0.9em;
-        color: #333;
-        font-family: 'Roboto Mono', monospace;
-        word-break: break-all;
-      }
-
-      .pool-item-model {
-        font-size: 0.78em;
-        color: #888;
-        margin-top: 1px;
-      }
-
-      .pool-empty {
-        text-align: center;
-        color: #999;
-        font-size: 0.85em;
-        padding: 20px;
-      }
-
-      /* Hidden select for form submission */
-      #replacementSerial {
-        display: none;
-      }
-
-      .btn-group {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 25px;
-      }
-
-      button {
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        font-family: inherit;
-      }
-
-      .btn-cancel { background: #eee; color: #333; }
-      .btn-save   { background: var(--primary); color: white; }
-
-      /* LOADING */
-      #loader { text-align: center; margin-top: 50px; color: #666; }
-
-      /* ── RESPONSIVE ── */
-      @media (max-width: 600px) {
-        body { padding: 12px; }
-
-        .toolbar {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .toolbar-actions {
-          justify-content: center;
-        }
-
-        .teacher-count {
-          text-align: center;
-        }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#1a73e8',
+              'primary-light': '#e8f0fe',
+              'primary-hover': '#d2e3fc',
+              broken: '#d93025',
+              'broken-light': '#fce8e6',
+              good: '#1e8e3e',
+              surface: '#f1f3f4',
+              card: '#ffffff',
+            },
+            fontFamily: {
+              sans: ['Roboto', 'sans-serif'],
+              mono: ['Roboto Mono', 'monospace'],
+            },
+          },
+        },
+      }
+    </script>
+    <style type="text/tailwindcss">
+      /* Transition utilities for collapse animations */
+      .collapse-animate {
+        transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
       }
     </style>
   </head>
-  <body>
+  <body class="bg-surface font-sans m-0 p-5">
 
-    <!-- ── TEACHER MANAGEMENT PANEL ── -->
-    <div id="mgmtPanel" class="mgmt-panel collapsed">
-      <div class="mgmt-panel-header" onclick="toggleMgmtPanel()">
+    <!-- TEACHER MANAGEMENT PANEL -->
+    <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
+      <div
+        class="flex justify-between items-center px-[18px] py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
+        onclick="toggleMgmtPanel()"
+        id="mgmtPanelHeader"
+      >
         <span>Teacher Management</span>
-        <span class="collapse-icon">&#9660;</span>
+        <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
       </div>
-      <div class="mgmt-panel-body">
+      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-[18px] py-0" id="mgmtPanelBody">
 
         <!-- Add / Edit form -->
-        <div class="mgmt-form">
-          <div class="mgmt-form-field">
-            <label for="inputTeacherName">Teacher Name</label>
-            <input type="text" id="inputTeacherName" placeholder="e.g. Smith" autocomplete="off">
+        <div class="flex gap-2.5 items-end flex-wrap mb-4 pt-[18px]">
+          <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+            <label for="inputTeacherName" class="text-sm text-gray-500 font-medium !block !mt-0">Teacher Name</label>
+            <input type="text" id="inputTeacherName" placeholder="e.g. Smith" autocomplete="off"
+              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <div class="mgmt-form-field">
-            <label for="inputRoomNumber">Room Number</label>
-            <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off">
+          <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+            <label for="inputRoomNumber" class="text-sm text-gray-500 font-medium !block !mt-0">Room Number</label>
+            <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off"
+              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <button class="btn-add-teacher" id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Teacher</button>
+          <button class="bg-primary text-white px-[18px] py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap self-end hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Teacher</button>
         </div>
-        <div class="mgmt-msg" id="mgmtMsg"></div>
+        <div class="text-sm py-1.5 min-h-[1.2em]" id="mgmtMsg"></div>
 
         <!-- Existing teachers table -->
-        <div id="teacherTableWrap"></div>
+        <div id="teacherTableWrap" class="pb-[18px]"></div>
       </div>
     </div>
 
-    <!-- ── SEARCH & TOOLBAR ── -->
-    <div class="toolbar" id="toolbar" style="display:none;">
-      <div class="search-wrap">
-        <span class="search-icon">&#128269;</span>
-        <input type="text" id="teacherSearch" placeholder="Search for a teacher..." oninput="onTeacherSearch()" autocomplete="off">
+    <!-- SEARCH & TOOLBAR -->
+    <div class="bg-card rounded-lg shadow-sm mb-5 px-[18px] py-3.5 flex items-center gap-3 flex-wrap" id="toolbar" style="display:none;">
+      <div class="flex-1 min-w-[200px] relative">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
+        <input type="text" id="teacherSearch" placeholder="Search for a teacher..." oninput="onTeacherSearch()" autocomplete="off"
+          class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
       </div>
-      <div class="toolbar-actions">
-        <button class="btn-toolbar" onclick="expandAll()">Expand All</button>
-        <button class="btn-toolbar" onclick="collapseAll()">Collapse All</button>
+      <div class="flex gap-2 flex-shrink-0">
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+          onclick="expandAll()">Expand All</button>
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+          onclick="collapseAll()">Collapse All</button>
       </div>
-      <span class="teacher-count" id="teacherCount"></span>
+      <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
     </div>
 
-    <div id="loader">Loading Inventory...</div>
-    <div id="app" class="app-container" style="display:none;"></div>
+    <div id="loader" class="text-center mt-12 text-gray-500">Loading Inventory...</div>
+    <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
 
-    <!-- ── DEVICE EDIT MODAL ── -->
-    <div id="modalOverlay" class="modal-overlay">
-      <div class="modal">
-        <h2 id="modalTitle">Device Details</h2>
-        <div id="modalDetails" style="margin-bottom:15px; font-size:0.9em; color:#666;"></div>
+    <!-- DEVICE EDIT MODAL -->
+    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center">
+      <div class="bg-white p-6 rounded-lg w-[90%] max-w-[480px] max-h-[90vh] overflow-y-auto shadow-xl">
+        <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
+        <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
 
         <form id="updateForm">
           <input type="hidden" id="rowIndex" name="rowIndex">
           <input type="hidden" id="replacementSerial" name="replacementSerial" value="">
+          <input type="hidden" id="isCustomSerial" name="isCustomSerial" value="false">
 
-          <label>Status</label>
-          <select id="statusSelect" name="status" onchange="toggleReplacement()">
+          <label class="block mt-4 text-sm text-gray-500 font-medium">Status</label>
+          <select id="statusSelect" name="status" onchange="toggleReplacement()"
+            class="w-full p-2.5 mt-1 border border-gray-300 rounded box-border font-sans text-sm">
             <option value="Working">Working</option>
             <option value="Broken">Broken / Needs Repair</option>
           </select>
 
           <div id="replacementContainer" style="display:none;">
-            <label>Assign Replacement (From Pool)</label>
+            <label class="block mt-4 text-sm text-gray-500 font-medium">Assign Replacement</label>
 
-            <div class="pool-search-wrap">
-              <span class="search-icon">&#128269;</span>
-              <input
-                type="text"
-                id="poolSearch"
-                placeholder="Search by serial or model..."
-                oninput="filterPool()"
-                autocomplete="off"
-              >
+            <!-- Source toggle: Pool vs Custom -->
+            <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
+              <button type="button" id="tabPool"
+                class="flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white"
+                onclick="switchSerialSource('pool')">
+                From Pool
+              </button>
+              <button type="button" id="tabCustom"
+                class="flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100"
+                onclick="switchSerialSource('custom')">
+                Custom Serial
+              </button>
             </div>
 
-            <div class="pool-toolbar">
-              <span class="pool-count" id="poolCount"></span>
-              <select class="pool-sort-select" id="poolSort" onchange="filterPool()">
-                <option value="serial-asc">Serial A-Z</option>
-                <option value="serial-desc">Serial Z-A</option>
-                <option value="model-asc">Model A-Z</option>
-                <option value="model-desc">Model Z-A</option>
-              </select>
+            <!-- Pool selection panel -->
+            <div id="poolPanel">
+              <div class="relative mt-2">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
+                <input
+                  type="text"
+                  id="poolSearch"
+                  placeholder="Search by serial or model..."
+                  oninput="filterPool()"
+                  autocomplete="off"
+                  class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-sm box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white m-0"
+                >
+              </div>
+
+              <div class="flex gap-2 mt-1.5 items-center justify-between">
+                <span class="text-xs text-gray-400" id="poolCount"></span>
+                <select class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0"
+                  id="poolSort" onchange="filterPool()">
+                  <option value="serial-asc">Serial A-Z</option>
+                  <option value="serial-desc">Serial Z-A</option>
+                  <option value="model-asc">Model A-Z</option>
+                  <option value="model-desc">Model Z-A</option>
+                </select>
+              </div>
+
+              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50" id="poolList"></div>
             </div>
 
-            <div class="pool-list" id="poolList"></div>
+            <!-- Custom serial input panel (hidden by default) -->
+            <div id="customPanel" class="hidden">
+              <div class="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-xs text-amber-700 mb-3 mt-0">Enter a serial number for a device not in the replacement pool. This serial will not be tracked in the pool inventory.</p>
+                <label class="block text-sm text-gray-600 font-medium !mt-0 mb-1" for="customSerialInput">Serial Number</label>
+                <input
+                  type="text"
+                  id="customSerialInput"
+                  placeholder="Enter serial number..."
+                  autocomplete="off"
+                  oninput="onCustomSerialInput()"
+                  class="w-full py-2.5 px-3 border border-gray-300 rounded-md font-mono text-sm box-border bg-white transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
+                >
+                <div id="customSerialValidation" class="text-xs mt-1.5 min-h-[1em]"></div>
+              </div>
+            </div>
           </div>
 
-          <div class="btn-group">
-            <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-save" onclick="saveUpdate()">Save Update</button>
+          <div class="flex justify-end gap-2.5 mt-6">
+            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 transition-colors" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn-save-update bg-primary text-white px-5 py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 transition-colors" onclick="saveUpdate()">Save Update</button>
           </div>
         </form>
       </div>
@@ -712,9 +179,11 @@
 
     <script>
       var globalData      = {};
-      var globalPool      = []; // Array of { serial, model }
-      var globalTeachers  = {}; // { "TeacherName": "RoomNumber" }
-      var selectedReplacement = ''; // Track selected replacement serial
+      var globalPool      = [];
+      var globalTeachers  = {};
+      var selectedReplacement = '';
+      var serialSource = 'pool'; // 'pool' or 'custom'
+      var mgmtPanelOpen = false;
 
       // ── INITIAL LOAD ──
       window.onload = function() {
@@ -733,7 +202,26 @@
 
       // ── TEACHER MANAGEMENT PANEL ──
       function toggleMgmtPanel() {
-        document.getElementById('mgmtPanel').classList.toggle('collapsed');
+        mgmtPanelOpen = !mgmtPanelOpen;
+        var body = document.getElementById('mgmtPanelBody');
+        var icon = document.getElementById('mgmtCollapseIcon');
+        var header = document.getElementById('mgmtPanelHeader');
+
+        if (mgmtPanelOpen) {
+          body.style.maxHeight = '800px';
+          body.style.opacity = '1';
+          body.style.paddingTop = '0';
+          body.style.paddingBottom = '0';
+          icon.style.transform = 'rotate(0deg)';
+          header.classList.add('border-b', 'border-gray-200');
+        } else {
+          body.style.maxHeight = '0';
+          body.style.opacity = '0';
+          body.style.paddingTop = '0';
+          body.style.paddingBottom = '0';
+          icon.style.transform = 'rotate(-90deg)';
+          header.classList.remove('border-b', 'border-gray-200');
+        }
       }
 
       function renderTeacherTable() {
@@ -741,20 +229,24 @@
         var keys = Object.keys(globalTeachers).sort();
 
         if (keys.length === 0) {
-          wrap.innerHTML = '<p class="no-teachers-msg">No teachers added yet. Use the form above to add one.</p>';
+          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No teachers added yet. Use the form above to add one.</p>';
           return;
         }
 
-        var html = '<table class="teacher-table"><thead><tr>' +
-          '<th>Teacher Name</th><th>Room</th><th></th>' +
+        var html = '<table class="w-full border-collapse text-sm">' +
+          '<thead><tr>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Teacher Name</th>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Room</th>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium"></th>' +
           '</tr></thead><tbody>';
 
         keys.forEach(function(name) {
           var room = globalTeachers[name] || '\u2014';
-          html += '<tr>' +
-            '<td>' + escHtml(name) + '</td>' +
-            '<td>' + escHtml(room) + '</td>' +
-            '<td><button class="btn-edit-teacher" onclick="prefillTeacher(' +
+          html += '<tr class="hover:bg-gray-50 transition-colors">' +
+            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
+            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
+            '<td class="py-2 px-2.5 border-b border-gray-100">' +
+              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light transition-colors" onclick="prefillTeacher(' +
               JSON.stringify(name) + ',' + JSON.stringify(globalTeachers[name] || '') +
             ')">Edit</button></td>' +
             '</tr>';
@@ -795,10 +287,9 @@
               return;
             }
 
-            // Update local cache and re-render
             globalTeachers[result.teacher] = result.room;
             renderTeacherTable();
-            renderCards(); // refresh room badges on cards
+            renderCards();
 
             document.getElementById('inputTeacherName').value = '';
             document.getElementById('inputRoomNumber').value  = '';
@@ -817,7 +308,9 @@
       function setMgmtMsg(text, type) {
         var el = document.getElementById('mgmtMsg');
         el.innerText = text;
-        el.className = 'mgmt-msg' + (type ? ' ' + type : '');
+        el.className = 'text-sm py-1.5 min-h-[1.2em]';
+        if (type === 'success') el.classList.add('text-good');
+        if (type === 'error') el.classList.add('text-broken');
       }
 
       // ── TEACHER SEARCH ──
@@ -838,13 +331,12 @@
           }
         });
 
-        // Update no-results message
         var noResults = document.getElementById('noResults');
         if (shown === 0 && total > 0) {
           if (!noResults) {
             noResults = document.createElement('div');
             noResults.id = 'noResults';
-            noResults.className = 'no-results';
+            noResults.className = 'text-center text-gray-400 text-[0.95em] py-10 bg-card rounded-lg shadow-sm';
             document.getElementById('app').appendChild(noResults);
           }
           noResults.innerText = 'No teachers found matching "' + document.getElementById('teacherSearch').value.trim() + '"';
@@ -867,17 +359,47 @@
 
       // ── COLLAPSE / EXPAND ALL ──
       function collapseAll() {
-        var cards = document.querySelectorAll('.teacher-card');
-        cards.forEach(function(card) {
-          card.classList.add('collapsed');
+        document.querySelectorAll('.teacher-card').forEach(function(card) {
+          collapseCard(card);
         });
       }
 
       function expandAll() {
-        var cards = document.querySelectorAll('.teacher-card');
-        cards.forEach(function(card) {
-          card.classList.remove('collapsed');
+        document.querySelectorAll('.teacher-card').forEach(function(card) {
+          expandCard(card);
         });
+      }
+
+      function collapseCard(card) {
+        card.classList.add('collapsed');
+        var grid = card.querySelector('.slot-grid');
+        var header = card.querySelector('.teacher-header');
+        var icon = card.querySelector('.collapse-icon');
+        if (grid) {
+          grid.style.maxHeight = '0';
+          grid.style.opacity = '0';
+        }
+        if (header) {
+          header.classList.remove('border-b', 'border-gray-200');
+          header.classList.add('mb-0', 'pb-0');
+        }
+        if (icon) icon.style.transform = 'rotate(-90deg)';
+      }
+
+      function expandCard(card) {
+        card.classList.remove('collapsed');
+        var grid = card.querySelector('.slot-grid');
+        var header = card.querySelector('.teacher-header');
+        var icon = card.querySelector('.collapse-icon');
+        if (grid) {
+          grid.style.maxHeight = '2000px';
+          grid.style.opacity = '1';
+        }
+        if (header) {
+          header.classList.add('border-b', 'border-gray-200');
+          header.classList.remove('mb-0', 'pb-0');
+        }
+        if (icon) icon.style.transform = 'rotate(0deg)';
       }
 
       // ── RENDER TEACHER CARDS ──
@@ -889,55 +411,65 @@
 
         teachers.forEach(function(teacher) {
           var card = document.createElement('div');
-          card.className = 'teacher-card';
+          card.className = 'teacher-card bg-card rounded-lg shadow-sm p-4';
           card.setAttribute('data-teacher', teacher);
           var room = globalTeachers[teacher] || '';
           card.setAttribute('data-room', room);
 
           // --- Collapsible Header ---
           var header = document.createElement('div');
-          header.className = 'teacher-header';
+          header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2.5 pb-2 cursor-pointer select-none';
 
           var info = document.createElement('div');
-          info.className = 'teacher-info';
+          info.className = 'flex-1';
 
           var nameEl = document.createElement('div');
-          nameEl.className = 'teacher-name';
+          nameEl.className = 'font-medium text-[1.1em] text-gray-700 transition-colors';
           nameEl.innerText = teacher;
           info.appendChild(nameEl);
 
           if (room) {
             var roomEl = document.createElement('div');
-            roomEl.className = 'teacher-room';
+            roomEl.className = 'text-xs text-gray-400 mt-0.5';
             roomEl.innerText = 'Room ' + room;
             info.appendChild(roomEl);
           }
 
-          // Stats line
           var devices = globalData[teacher];
           var brokenCount = devices.filter(function(d) { return d.status === 'Broken'; }).length;
           var statsEl = document.createElement('div');
-          statsEl.className = 'teacher-stats';
+          statsEl.className = 'text-xs text-gray-400 mt-1';
           var statsText = devices.length + ' device' + (devices.length !== 1 ? 's' : '');
           if (brokenCount > 0) {
-            statsText += ' \u2022 <span class="stat-broken">' + brokenCount + ' broken</span>';
+            statsText += ' \u2022 <span class="text-broken font-medium">' + brokenCount + ' broken</span>';
           }
           statsEl.innerHTML = statsText;
           info.appendChild(statsEl);
 
           var icon = document.createElement('span');
-          icon.className = 'collapse-icon';
-          icon.innerHTML = '&#9660;'; // down arrow
+          icon.className = 'collapse-icon text-xs text-gray-400 transition-transform duration-300 flex-shrink-0 ml-2 mt-1';
+          icon.innerHTML = '&#9660;';
 
           header.appendChild(info);
           header.appendChild(icon);
-          header.onclick = function() { card.classList.toggle('collapsed'); };
+          header.onclick = function() {
+            if (card.classList.contains('collapsed')) {
+              expandCard(card);
+            } else {
+              collapseCard(card);
+            }
+          };
+          // Hover effect for teacher name
+          header.onmouseenter = function() { nameEl.classList.add('text-primary'); };
+          header.onmouseleave = function() { nameEl.classList.remove('text-primary'); };
 
           card.appendChild(header);
 
           // --- Slot Grid ---
           var grid = document.createElement('div');
-          grid.className = 'slot-grid';
+          grid.className = 'slot-grid grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2 overflow-hidden collapse-animate';
+          grid.style.maxHeight = '2000px';
+          grid.style.opacity = '1';
 
           var sortedDevices = devices.sort(function(a, b) {
             return parseInt(a.slot.replace('Slot ', '')) - parseInt(b.slot.replace('Slot ', ''));
@@ -945,8 +477,12 @@
 
           sortedDevices.forEach(function(device) {
             var chip = document.createElement('div');
-            chip.className = 'device-chip' + (device.status === 'Broken' ? ' broken' : '');
-            chip.innerHTML = '<span class="slot-num">' + device.slot + '</span>' + device.serial.substring(0, 6) + '...';
+            var isBroken = device.status === 'Broken';
+            chip.className = 'py-2 px-1 rounded text-center cursor-pointer text-sm select-none transition-transform active:scale-95 ' +
+              (isBroken
+                ? 'bg-broken-light text-broken border border-broken'
+                : 'bg-primary-light text-primary');
+            chip.innerHTML = '<span class="block font-bold text-xs opacity-70">' + escHtml(device.slot) + '</span>' + escHtml(device.serial.substring(0, 6)) + '...';
             chip.onclick = function() { openModal(device); };
             grid.appendChild(chip);
           });
@@ -962,23 +498,91 @@
         updateTeacherCount(teachers.length, teachers.length);
       }
 
+      // ── SERIAL SOURCE TOGGLE ──
+      function switchSerialSource(source) {
+        serialSource = source;
+        var tabPool = document.getElementById('tabPool');
+        var tabCustom = document.getElementById('tabCustom');
+        var poolPanel = document.getElementById('poolPanel');
+        var customPanel = document.getElementById('customPanel');
+
+        if (source === 'pool') {
+          tabPool.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
+          tabCustom.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          poolPanel.classList.remove('hidden');
+          customPanel.classList.add('hidden');
+          // Clear custom input, restore pool selection
+          document.getElementById('customSerialInput').value = '';
+          document.getElementById('customSerialValidation').innerText = '';
+          document.getElementById('isCustomSerial').value = 'false';
+          document.getElementById('replacementSerial').value = selectedReplacement;
+        } else {
+          tabCustom.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
+          tabPool.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          customPanel.classList.remove('hidden');
+          poolPanel.classList.add('hidden');
+          // Clear pool selection, use custom input
+          document.getElementById('isCustomSerial').value = 'true';
+          var customVal = document.getElementById('customSerialInput').value.trim();
+          document.getElementById('replacementSerial').value = customVal;
+        }
+      }
+
+      function onCustomSerialInput() {
+        var val = document.getElementById('customSerialInput').value.trim();
+        document.getElementById('replacementSerial').value = val;
+
+        var validationEl = document.getElementById('customSerialValidation');
+
+        if (!val) {
+          validationEl.innerText = '';
+          validationEl.className = 'text-xs mt-1.5 min-h-[1em]';
+          return;
+        }
+
+        // Check if serial exists in pool
+        var inPool = globalPool.some(function(item) {
+          return item.serial.toLowerCase() === val.toLowerCase();
+        });
+
+        if (inPool) {
+          validationEl.innerText = 'This serial exists in the replacement pool. Consider using "From Pool" instead.';
+          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-amber-600';
+        } else if (val.length < 3) {
+          validationEl.innerText = 'Serial number seems too short.';
+          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-amber-600';
+        } else {
+          validationEl.innerText = 'Custom serial will be assigned.';
+          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-good';
+        }
+      }
+
       // ── DEVICE MODAL ──
       function openModal(device) {
         document.getElementById('modalTitle').innerText = device.teacher + ' - ' + device.slot;
         document.getElementById('modalDetails').innerHTML =
-          'Model: ' + device.model + '<br>Serial: <b>' + device.serial + '</b><br>Current Status: ' + device.status;
+          'Model: ' + escHtml(device.model) + '<br>Serial: <b>' + escHtml(device.serial) + '</b><br>Current Status: ' + escHtml(device.status);
 
         document.getElementById('rowIndex').value = device.rowIndex;
         document.getElementById('statusSelect').value = device.status || 'Working';
 
-        // Reset pool controls
+        // Reset all replacement controls
         document.getElementById('poolSearch').value = '';
         document.getElementById('poolSort').value = 'serial-asc';
+        document.getElementById('customSerialInput').value = '';
+        document.getElementById('customSerialValidation').innerText = '';
+        document.getElementById('isCustomSerial').value = 'false';
         selectedReplacement = '';
+        serialSource = 'pool';
         document.getElementById('replacementSerial').value = '';
+
+        // Reset tabs to pool view
+        switchSerialSource('pool');
 
         filterPool();
         toggleReplacement();
+
+        document.getElementById('modalOverlay').classList.remove('hidden');
         document.getElementById('modalOverlay').style.display = 'flex';
       }
 
@@ -1006,24 +610,43 @@
         poolList.innerHTML = '';
 
         if (filtered.length === 0) {
-          poolList.innerHTML = '<div class="pool-empty">' +
+          poolList.innerHTML = '<div class="text-center text-gray-400 text-sm py-5">' +
             (query ? 'No devices matching "' + escHtml(query) + '"' : 'No available devices') +
             '</div>';
         } else {
           filtered.forEach(function(item) {
             var row = document.createElement('div');
-            row.className = 'pool-item' + (selectedReplacement === item.serial ? ' selected' : '');
+            var isSelected = selectedReplacement === item.serial;
+            row.className = 'flex items-center py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
+              (isSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
             row.setAttribute('data-serial', item.serial);
 
-            row.innerHTML =
-              '<div class="pool-item-radio"></div>' +
-              '<div class="pool-item-details">' +
-                '<div class="pool-item-serial">' + escHtml(item.serial) + '</div>' +
-                '<div class="pool-item-model">' + escHtml(item.model) + '</div>' +
-              '</div>';
+            // Radio indicator
+            var radio = document.createElement('div');
+            radio.className = 'w-4 h-4 border-2 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ' +
+              (isSelected ? 'border-primary' : 'border-gray-300');
+            if (isSelected) {
+              var dot = document.createElement('div');
+              dot.className = 'w-2 h-2 bg-primary rounded-full';
+              radio.appendChild(dot);
+            }
+
+            // Details
+            var details = document.createElement('div');
+            details.className = 'flex-1 min-w-0';
+            var serialDiv = document.createElement('div');
+            serialDiv.className = 'text-sm text-gray-700 font-mono break-all';
+            serialDiv.textContent = item.serial;
+            var modelDiv = document.createElement('div');
+            modelDiv.className = 'text-xs text-gray-400 mt-px';
+            modelDiv.textContent = item.model;
+            details.appendChild(serialDiv);
+            details.appendChild(modelDiv);
+
+            row.appendChild(radio);
+            row.appendChild(details);
 
             row.onclick = function() {
-              // Toggle selection
               if (selectedReplacement === item.serial) {
                 selectedReplacement = '';
               } else {
@@ -1031,13 +654,17 @@
               }
               document.getElementById('replacementSerial').value = selectedReplacement;
               // Update visual state
-              var items = poolList.querySelectorAll('.pool-item');
+              var items = poolList.querySelectorAll('[data-serial]');
               items.forEach(function(el) {
-                if (el.getAttribute('data-serial') === selectedReplacement) {
-                  el.classList.add('selected');
-                } else {
-                  el.classList.remove('selected');
-                }
+                var elSerial = el.getAttribute('data-serial');
+                var elIsSelected = elSerial === selectedReplacement;
+                el.className = 'flex items-center py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
+                  (elIsSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
+
+                var radioEl = el.querySelector('div:first-child');
+                radioEl.className = 'w-4 h-4 border-2 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ' +
+                  (elIsSelected ? 'border-primary' : 'border-gray-300');
+                radioEl.innerHTML = elIsSelected ? '<div class="w-2 h-2 bg-primary rounded-full"></div>' : '';
               });
             };
 
@@ -1062,28 +689,50 @@
           container.style.display = 'none';
           selectedReplacement = '';
           document.getElementById('replacementSerial').value = '';
+          document.getElementById('customSerialInput').value = '';
+          document.getElementById('isCustomSerial').value = 'false';
         }
       }
 
       function closeModal() {
         document.getElementById('modalOverlay').style.display = 'none';
+        document.getElementById('modalOverlay').classList.add('hidden');
       }
 
       function saveUpdate() {
-        var btn = document.querySelector('.btn-save');
-        btn.innerText = 'Saving...';
-        btn.disabled  = true;
+        var btn = document.querySelector('.btn-save-update');
+        if (btn) {
+          btn.innerText = 'Saving...';
+          btn.disabled  = true;
+        }
+
+        // Ensure the hidden field has the right value based on current source
+        if (serialSource === 'custom') {
+          var customVal = document.getElementById('customSerialInput').value.trim();
+          document.getElementById('replacementSerial').value = customVal;
+          document.getElementById('isCustomSerial').value = 'true';
+        } else {
+          document.getElementById('isCustomSerial').value = 'false';
+        }
 
         var form = document.getElementById('updateForm');
 
         google.script.run.withSuccessHandler(function() {
           closeModal();
-          btn.innerText = 'Save Update';
-          btn.disabled  = false;
+          if (btn) {
+            btn.innerText = 'Save Update';
+            btn.disabled  = false;
+          }
           document.getElementById('loader').style.display = 'block';
           document.getElementById('app').style.display    = 'none';
           document.getElementById('toolbar').style.display = 'none';
           google.script.run.withSuccessHandler(renderApp).getAppData();
+        }).withFailureHandler(function(err) {
+          if (btn) {
+            btn.innerText = 'Save Update';
+            btn.disabled  = false;
+          }
+          alert('Error saving update: ' + (err.message || err));
         }).submitUpdate(form);
       }
 
