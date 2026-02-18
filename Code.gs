@@ -20,29 +20,40 @@ function doGet() {
 // --- API: GET DATA ---
 function getAppData() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
-  
+
   // 1. Get Inventory
   var invSheet = ss.getSheetByName("Inventory");
   // Assumes headers in row 1. Data starts row 2.
   // Columns: Teacher(A), Model(B), Slot(C), Serial(D), Status(E), ReplaceSerial(F), LastAudit(G)
   var invData = invSheet.getRange(2, 1, invSheet.getLastRow()-1, 7).getValues();
-  
+
   // 2. Get Replacement Pool
   var poolSheet = ss.getSheetByName("Replacement_Pool");
   // Columns: Serial(A), Model(B), Status(C)
   var poolData = poolSheet.getRange(2, 1, poolSheet.getLastRow()-1, 3).getValues();
-  
+
   // Filter for only AVAILABLE replacements, return serial + model for sorting/searching
   var availableReplacements = poolData
     .filter(function(row) { return row[2] === "Available"; })
     .map(function(row) { return { serial: row[0], model: row[1] }; });
+
+  // 3. Get Teacher-Room mappings (sheet may not exist yet)
+  var teacherRooms = {};
+  var teacherSheet = ss.getSheetByName("Teachers");
+  if (teacherSheet && teacherSheet.getLastRow() > 1) {
+    // Columns: Name(A), Room(B)
+    var teacherData = teacherSheet.getRange(2, 1, teacherSheet.getLastRow()-1, 2).getValues();
+    teacherData.forEach(function(row) {
+      if (row[0]) teacherRooms[row[0]] = row[1] || '';
+    });
+  }
 
   // Process Inventory into a nested object: { "TeacherName": [ {row data}, {row data} ] }
   var groupedData = {};
   invData.forEach(function(row, index) {
     var teacher = row[0];
     if (!groupedData[teacher]) groupedData[teacher] = [];
-    
+
     groupedData[teacher].push({
       rowIndex: index + 2, // Store real sheet row number for updates
       teacher: row[0],
@@ -57,8 +68,57 @@ function getAppData() {
   return {
     inventory: groupedData,
     replacements: availableReplacements,
+    teacherRooms: teacherRooms,
     user: Session.getActiveUser().getEmail()
   };
+}
+
+// --- API: SAVE TEACHER ---
+function saveTeacher(formObject) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+
+  // Create Teachers sheet if it doesn't exist
+  var teacherSheet = ss.getSheetByName("Teachers");
+  if (!teacherSheet) {
+    teacherSheet = ss.insertSheet("Teachers");
+    teacherSheet.appendRow(["Name", "Room"]);
+    teacherSheet.getRange(1, 1, 1, 2).setFontWeight("bold");
+  }
+
+  var name = (formObject.teacherName || '').toString().trim();
+  var room = (formObject.roomNumber || '').toString().trim();
+
+  if (!name) return { status: "error", message: "Teacher name is required." };
+
+  // Update existing row if the teacher already exists (case-insensitive)
+  var data = teacherSheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === name.toLowerCase()) {
+      teacherSheet.getRange(i + 1, 1).setValue(name); // normalise capitalisation
+      teacherSheet.getRange(i + 1, 2).setValue(room);
+      return { status: "updated", teacher: name, room: room };
+    }
+  }
+
+  // Otherwise append a new row
+  teacherSheet.appendRow([name, room]);
+  return { status: "added", teacher: name, room: room };
+}
+
+// --- API: DELETE TEACHER ---
+function deleteTeacher(teacherName) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var teacherSheet = ss.getSheetByName("Teachers");
+  if (!teacherSheet || teacherSheet.getLastRow() <= 1) return { status: "not_found" };
+
+  var data = teacherSheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === teacherName.toLowerCase()) {
+      teacherSheet.deleteRow(i + 1);
+      return { status: "deleted" };
+    }
+  }
+  return { status: "not_found" };
 }
 
 // --- API: HANDLE UPDATE ---
