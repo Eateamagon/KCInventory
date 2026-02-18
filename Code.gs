@@ -32,10 +32,10 @@ function getAppData() {
   // Columns: Serial(A), Model(B), Status(C)
   var poolData = poolSheet.getRange(2, 1, poolSheet.getLastRow()-1, 3).getValues();
   
-  // Filter for only AVAILABLE replacements
+  // Filter for only AVAILABLE replacements, return serial + model for sorting/searching
   var availableReplacements = poolData
     .filter(function(row) { return row[2] === "Available"; })
-    .map(function(row) { return row[0]; }); // Just return the serial numbers
+    .map(function(row) { return { serial: row[0], model: row[1] }; });
 
   // Process Inventory into a nested object: { "TeacherName": [ {row data}, {row data} ] }
   var groupedData = {};

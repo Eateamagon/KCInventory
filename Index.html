@@ -4,73 +4,273 @@
     <base target="_top">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-      :root { --primary: #1a73e8; --bg: #f1f3f4; --card: #ffffff; --broken: #d93025; --good: #1e8e3e; }
-      body { font-family: 'Roboto', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-      
+      :root {
+        --primary: #1a73e8;
+        --bg: #f1f3f4;
+        --card: #ffffff;
+        --broken: #d93025;
+        --good: #1e8e3e;
+      }
+
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: 20px;
+      }
+
       /* GRID SYSTEM */
-      .app-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-      
+      .app-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
       /* TEACHER CARD */
-      .teacher-card { background: var(--card); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 15px; }
-      .teacher-header { border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px; font-weight: 500; font-size: 1.1em; color: #333; }
-      
+      .teacher-card {
+        background: var(--card);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        padding: 15px;
+      }
+
+      /* TEACHER HEADER - clickable to collapse */
+      .teacher-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        font-weight: 500;
+        font-size: 1.1em;
+        color: #333;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .teacher-header:hover { color: var(--primary); }
+
+      .collapse-icon {
+        font-size: 0.75em;
+        color: #aaa;
+        transition: transform 0.25s ease;
+        flex-shrink: 0;
+        margin-left: 8px;
+      }
+
+      /* Collapsed state */
+      .teacher-card.collapsed .collapse-icon {
+        transform: rotate(-90deg);
+      }
+
+      .teacher-card.collapsed .teacher-header {
+        border-bottom-color: transparent;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
       /* SLOT GRID inside Teacher Card */
-      .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
-      
+      .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
+        overflow: hidden;
+        max-height: 2000px;
+        opacity: 1;
+        transition: max-height 0.3s ease, opacity 0.25s ease, margin-top 0.25s ease;
+        margin-top: 0;
+      }
+
+      .teacher-card.collapsed .slot-grid {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+      }
+
       /* INDIVIDUAL DEVICE */
-      .device-chip { 
-        background: #e8f0fe; color: var(--primary); 
-        padding: 8px 4px; border-radius: 4px; text-align: center; cursor: pointer; font-size: 0.85em; user-select: none;
+      .device-chip {
+        background: #e8f0fe;
+        color: var(--primary);
+        padding: 8px 4px;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 0.85em;
+        user-select: none;
         transition: transform 0.1s;
       }
+
       .device-chip:active { transform: scale(0.95); }
-      .device-chip.broken { background: #fce8e6; color: var(--broken); border: 1px solid var(--broken); }
-      .device-chip .slot-num { display: block; font-weight: bold; font-size: 0.8em; opacity: 0.7; }
-      
+
+      .device-chip.broken {
+        background: #fce8e6;
+        color: var(--broken);
+        border: 1px solid var(--broken);
+      }
+
+      .device-chip .slot-num {
+        display: block;
+        font-weight: bold;
+        font-size: 0.8em;
+        opacity: 0.7;
+      }
+
       /* MODAL */
-      .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-      .modal { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 440px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      }
+
       .modal h2 { margin-top: 0; }
-      
+
       /* FORMS */
-      label { display: block; margin-top: 15px; font-size: 0.9em; color: #555; }
-      select, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-      
-      .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
-      button { border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+      label {
+        display: block;
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #555;
+        font-weight: 500;
+      }
+
+      select, input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 0.9em;
+      }
+
+      /* REPLACEMENT POOL CONTROLS */
+      .pool-toolbar {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        align-items: center;
+      }
+
+      .pool-search-input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-family: inherit;
+        box-sizing: border-box;
+      }
+
+      .pool-sort-select {
+        padding: 8px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.85em;
+        background: #f8f9fa;
+        cursor: pointer;
+        font-family: inherit;
+        flex-shrink: 0;
+      }
+
+      .pool-count {
+        font-size: 0.78em;
+        color: #999;
+        margin-top: 4px;
+        text-align: right;
+      }
+
+      #replacementSelect {
+        height: 160px;
+        margin-top: 6px;
+      }
+
+      .btn-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 25px;
+      }
+
+      button {
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        font-family: inherit;
+      }
+
       .btn-cancel { background: #eee; color: #333; }
       .btn-save { background: var(--primary); color: white; }
-      
+
       /* LOADING */
       #loader { text-align: center; margin-top: 50px; color: #666; }
     </style>
   </head>
   <body>
-    
+
     <div id="loader">Loading Inventory...</div>
     <div id="app" class="app-container" style="display:none;"></div>
 
     <div id="modalOverlay" class="modal-overlay">
       <div class="modal">
         <h2 id="modalTitle">Device Details</h2>
-        <div id="modalDetails" style="margin-bottom:15px; font-size: 0.9em; color: #666;"></div>
-        
+        <div id="modalDetails" style="margin-bottom:15px; font-size:0.9em; color:#666;"></div>
+
         <form id="updateForm">
           <input type="hidden" id="rowIndex" name="rowIndex">
-          
+
           <label>Status</label>
           <select id="statusSelect" name="status" onchange="toggleReplacement()">
             <option value="Working">Working</option>
             <option value="Broken">Broken / Needs Repair</option>
           </select>
-          
+
           <div id="replacementContainer" style="display:none;">
             <label>Assign Replacement (From Pool)</label>
+
+            <div class="pool-toolbar">
+              <input
+                type="text"
+                class="pool-search-input"
+                id="poolSearch"
+                placeholder="Search serial or model..."
+                oninput="filterPool()"
+                autocomplete="off"
+              >
+              <select class="pool-sort-select" id="poolSort" onchange="filterPool()">
+                <option value="serial-asc">Serial A-Z</option>
+                <option value="serial-desc">Serial Z-A</option>
+                <option value="model-asc">Model A-Z</option>
+                <option value="model-desc">Model Z-A</option>
+              </select>
+            </div>
+
+            <div class="pool-count" id="poolCount"></div>
+
             <select id="replacementSelect" name="replacementSerial">
               <option value="">-- Select Available Device --</option>
             </select>
           </div>
-          
+
           <div class="btn-group">
             <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
             <button type="button" class="btn-save" onclick="saveUpdate()">Save Update</button>
@@ -80,81 +280,139 @@
     </div>
 
     <script>
-      var globalData = {}; // Store inventory here
-      var globalPool = []; // Store replacement serials here
+      var globalData = {};
+      var globalPool = []; // Array of { serial, model } objects
 
       // INITIAL LOAD
       window.onload = function() {
         google.script.run.withSuccessHandler(renderApp).getAppData();
       };
 
+      // RENDER TEACHER CARDS
       function renderApp(data) {
         globalData = data.inventory;
         globalPool = data.replacements;
-        
+
         var app = document.getElementById('app');
         app.innerHTML = '';
-        
-        // Loop through teachers sorted alphabetically
+
         var teachers = Object.keys(globalData).sort();
-        
+
         teachers.forEach(function(teacher) {
           var card = document.createElement('div');
           card.className = 'teacher-card';
-          
+
+          // --- Collapsible Header ---
           var header = document.createElement('div');
           header.className = 'teacher-header';
-          header.innerText = teacher;
+
+          var nameSpan = document.createElement('span');
+          nameSpan.innerText = teacher;
+
+          var icon = document.createElement('span');
+          icon.className = 'collapse-icon';
+          icon.innerHTML = '&#9660;'; // ▼
+
+          header.appendChild(nameSpan);
+          header.appendChild(icon);
+
+          header.onclick = function() {
+            card.classList.toggle('collapsed');
+          };
+
           card.appendChild(header);
-          
+
+          // --- Slot Grid ---
           var grid = document.createElement('div');
           grid.className = 'slot-grid';
-          
-          // Sort slots numerically if possible
-          var devices = globalData[teacher].sort(function(a,b) { 
-            return parseInt(a.slot.replace('Slot ','')) - parseInt(b.slot.replace('Slot ','')); 
+
+          var devices = globalData[teacher].sort(function(a, b) {
+            return parseInt(a.slot.replace('Slot ', '')) - parseInt(b.slot.replace('Slot ', ''));
           });
-          
+
           devices.forEach(function(device) {
             var chip = document.createElement('div');
-            chip.className = 'device-chip ' + (device.status === 'Broken' ? 'broken' : '');
-            chip.innerHTML = '<span class="slot-num">' + device.slot + '</span>' + device.serial.substring(0,6) + '...';
-            
+            chip.className = 'device-chip' + (device.status === 'Broken' ? ' broken' : '');
+            chip.innerHTML = '<span class="slot-num">' + device.slot + '</span>' + device.serial.substring(0, 6) + '...';
             chip.onclick = function() { openModal(device); };
             grid.appendChild(chip);
           });
-          
+
           card.appendChild(grid);
           app.appendChild(card);
         });
-        
+
         document.getElementById('loader').style.display = 'none';
         app.style.display = 'grid';
       }
 
-      // MODAL LOGIC
+      // OPEN MODAL
       function openModal(device) {
         document.getElementById('modalTitle').innerText = device.teacher + ' - ' + device.slot;
-        document.getElementById('modalDetails').innerHTML = 
+        document.getElementById('modalDetails').innerHTML =
           'Model: ' + device.model + '<br>Serial: <b>' + device.serial + '</b><br>Current Status: ' + device.status;
-          
+
         document.getElementById('rowIndex').value = device.rowIndex;
         document.getElementById('statusSelect').value = device.status || 'Working';
-        
-        // Populate Replacement Dropdown
-        var repSelect = document.getElementById('replacementSelect');
-        repSelect.innerHTML = '<option value="">-- Select Available Device --</option>';
-        globalPool.forEach(function(serial) {
-          var opt = document.createElement('option');
-          opt.value = serial;
-          opt.innerText = serial;
-          repSelect.appendChild(opt);
-        });
-        
+
+        // Reset pool controls
+        document.getElementById('poolSearch').value = '';
+        document.getElementById('poolSort').value = 'serial-asc';
+
+        filterPool();
         toggleReplacement();
         document.getElementById('modalOverlay').style.display = 'flex';
       }
 
+      // FILTER + SORT REPLACEMENT POOL
+      function filterPool() {
+        var query = document.getElementById('poolSearch').value.toLowerCase().trim();
+        var sortBy = document.getElementById('poolSort').value;
+
+        // Filter
+        var filtered = globalPool.filter(function(item) {
+          if (!query) return true;
+          return item.serial.toLowerCase().indexOf(query) !== -1 ||
+                 item.model.toLowerCase().indexOf(query) !== -1;
+        });
+
+        // Sort
+        filtered.sort(function(a, b) {
+          switch (sortBy) {
+            case 'serial-asc':  return a.serial.localeCompare(b.serial);
+            case 'serial-desc': return b.serial.localeCompare(a.serial);
+            case 'model-asc':   return a.model.localeCompare(b.model);
+            case 'model-desc':  return b.model.localeCompare(a.model);
+            default:            return 0;
+          }
+        });
+
+        var repSelect = document.getElementById('replacementSelect');
+        var prevValue = repSelect.value;
+
+        repSelect.innerHTML = '<option value="">-- Select Available Device --</option>';
+        filtered.forEach(function(item) {
+          var opt = document.createElement('option');
+          opt.value = item.serial;
+          opt.innerText = item.serial + '  (' + item.model + ')';
+          repSelect.appendChild(opt);
+        });
+
+        // Restore prior selection if it survived the filter
+        if (prevValue && filtered.some(function(item) { return item.serial === prevValue; })) {
+          repSelect.value = prevValue;
+        }
+
+        // Update count badge
+        var total = globalPool.length;
+        var shown = filtered.length;
+        document.getElementById('poolCount').innerText =
+          shown === total
+            ? total + ' device' + (total !== 1 ? 's' : '') + ' available'
+            : shown + ' of ' + total + ' device' + (total !== 1 ? 's' : '') + ' shown';
+      }
+
+      // TOGGLE REPLACEMENT SECTION
       function toggleReplacement() {
         var status = document.getElementById('statusSelect').value;
         var container = document.getElementById('replacementContainer');
@@ -162,7 +420,7 @@
           container.style.display = 'block';
         } else {
           container.style.display = 'none';
-          document.getElementById('replacementSelect').value = "";
+          document.getElementById('replacementSelect').value = '';
         }
       }
 
@@ -174,14 +432,13 @@
         var btn = document.querySelector('.btn-save');
         btn.innerText = 'Saving...';
         btn.disabled = true;
-        
+
         var form = document.getElementById('updateForm');
-        
+
         google.script.run.withSuccessHandler(function() {
           closeModal();
           btn.innerText = 'Save Update';
           btn.disabled = false;
-          // Refresh data to show changes
           document.getElementById('loader').style.display = 'block';
           document.getElementById('app').style.display = 'none';
           google.script.run.withSuccessHandler(renderApp).getAppData();
