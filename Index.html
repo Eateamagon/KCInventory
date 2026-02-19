@@ -56,6 +56,9 @@
         content-visibility: auto;
         contain-intrinsic-size: 0 200px;
       }
+      @media (max-width: 640px) {
+        #app { grid-template-columns: 1fr !important; }
+      }
     </style>
   </head>
   <body class="bg-surface font-sans m-0 p-3 sm:p-5">
@@ -74,25 +77,11 @@
         <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
       </div>
       <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="mgmtPanelBody">
-
-        <!-- Add / Edit form -->
-        <div class="flex gap-2.5 items-end flex-wrap mb-4 pt-3 sm:pt-[18px]">
-          <div class="flex flex-col gap-1 w-full sm:flex-1 sm:min-w-[140px]">
-            <label for="inputTeacherName" class="text-sm text-gray-500 font-medium !block !mt-0">Cart Name</label>
-            <input type="text" id="inputTeacherName" placeholder="e.g. Smith" autocomplete="off"
-              class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
-          </div>
-          <div class="flex flex-col gap-1 w-full sm:flex-1 sm:min-w-[140px]">
-            <label for="inputRoomNumber" class="text-sm text-gray-500 font-medium !block !mt-0">Room Number</label>
-            <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off"
-              class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
-          </div>
-          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
-            id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Chromecart</button>
+        <div class="flex justify-between items-center pt-3 sm:pt-[18px] mb-3">
+          <span class="text-sm text-gray-400" id="mgmtMsg"></span>
+          <button class="bg-primary text-white px-4 py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+            onclick="openCartModal(null)">+ Add Chromecart</button>
         </div>
-        <div class="text-sm py-1.5 min-h-[1.2em]" id="mgmtMsg"></div>
-
-        <!-- Existing chromecarts table -->
         <div id="teacherTableWrap" class="pb-[18px]"></div>
       </div>
     </div>
@@ -139,6 +128,11 @@
           onclick="collapseAll()">Collapse All</button>
       </div>
       <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
+      <select id="layoutSelect" onchange="changeLayout()" class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0 hidden sm:block">
+        <option value="1">1 Column</option>
+        <option value="2">2 Columns</option>
+        <option value="3">3 Columns</option>
+      </select>
     </div>
 
     <div id="loader" class="text-center mt-12 text-gray-500"><span class="spinner"></span>Loading Inventory...</div>
@@ -233,6 +227,51 @@
       </div>
     </div>
 
+    <!-- CHROMECART EDIT MODAL -->
+    <div id="cartModalOverlay" class="hidden fixed inset-0 bg-black/50 z-[120] justify-center items-center overscroll-contain">
+      <div class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[600px] max-h-[90vh] overflow-hidden shadow-xl flex flex-col">
+        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
+          <h2 id="cartModalTitle" class="text-lg font-medium text-gray-800 m-0">Add Chromecart</h2>
+          <button onclick="closeCartModal()" class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
+        </div>
+        <div class="overflow-y-auto flex-1 scroll-touch p-4">
+          <div class="flex gap-2.5 flex-wrap mb-4">
+            <div class="flex flex-col gap-1 w-20">
+              <label class="text-sm text-gray-500 font-medium">Cart #</label>
+              <input type="text" id="cartModalNumber" placeholder="#" autocomplete="off"
+                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+            </div>
+            <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+              <label class="text-sm text-gray-500 font-medium">Cart Name</label>
+              <input type="text" id="cartModalName" placeholder="e.g. Smith" autocomplete="off"
+                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+            </div>
+            <div class="flex flex-col gap-1 w-28">
+              <label class="text-sm text-gray-500 font-medium">Room</label>
+              <input type="text" id="cartModalRoom" placeholder="e.g. 204" autocomplete="off"
+                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+            </div>
+          </div>
+
+          <div id="cartDevicesSection">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-medium text-gray-700">Devices</span>
+              <button type="button" onclick="addCartDevice()"
+                class="bg-gray-50 border border-gray-300 rounded px-3 py-1 text-xs cursor-pointer font-sans font-medium text-gray-500 hover:bg-primary-light hover:text-primary hover:border-primary transition-all duration-200">+ Add Device</button>
+            </div>
+            <div id="cartDeviceList" class="border border-gray-200 rounded-md overflow-hidden"></div>
+          </div>
+        </div>
+        <div class="flex flex-col-reverse sm:flex-row justify-between gap-2.5 px-4 py-3 border-t border-gray-200 flex-shrink-0">
+          <button type="button" id="cartDeleteBtn" class="bg-broken/10 text-broken px-4 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans text-sm border-none hover:bg-broken/20 transition-all duration-200 hidden" onclick="deleteCart()">Delete Chromecart</button>
+          <div class="flex flex-col-reverse sm:flex-row gap-2.5">
+            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="closeCartModal()">Cancel</button>
+            <button type="button" id="cartSaveBtn" class="bg-primary text-white px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200" onclick="saveCartModal()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       var globalData      = {};
       var globalPool      = [];
@@ -242,6 +281,9 @@
       var mgmtPanelOpen = false;
       var auditModalOpen = false;
       var auditLoaded = false;
+      var editingCartOriginalName = null;
+      var cartModalDevices = [];
+      var cartDeletedRows = [];
 
       // ── TOAST NOTIFICATIONS ──
       function showToast(message, type) {
@@ -327,29 +369,39 @@
 
       function renderTeacherTable() {
         var wrap = document.getElementById('teacherTableWrap');
-        var keys = Object.keys(globalTeachers).sort();
+        var keys = Object.keys(globalTeachers).sort(function(a, b) {
+          var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
+          var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
+          return numA !== numB ? numA - numB : a.localeCompare(b);
+        });
 
         if (keys.length === 0) {
-          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No chromecarts added yet. Use the form above to add one.</p>';
+          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No chromecarts added yet. Click "+ Add Chromecart" to create one.</p>';
           return;
         }
 
         var html = '<table class="w-full border-collapse text-sm">' +
           '<thead><tr>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-16">Cart #</th>' +
           '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Cart Name</th>' +
           '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Room</th>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium"></th>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-16">Devices</th>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-10"></th>' +
           '</tr></thead><tbody>';
 
         keys.forEach(function(name) {
-          var room = globalTeachers[name] || '\u2014';
+          var info = globalTeachers[name] || {};
+          var room = info.room || '\u2014';
+          var cartNum = info.cartNumber || '\u2014';
+          var devCount = (globalData[name] || []).length;
           html += '<tr class="hover:bg-gray-50 transition-colors">' +
+            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700 font-medium">' + escHtml(cartNum) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
+            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 text-center">' + devCount + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="prefillTeacher(' +
-              JSON.stringify(name) + ',' + JSON.stringify(globalTeachers[name] || '') +
-            ')">Edit Chromecart</button></td>' +
+              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="openCartModal(' +
+              JSON.stringify(name) + ')">Edit</button></td>' +
             '</tr>';
         });
 
@@ -357,69 +409,195 @@
         wrap.innerHTML = html;
       }
 
-      function prefillTeacher(name, room) {
-        document.getElementById('inputTeacherName').value = name;
-        document.getElementById('inputRoomNumber').value  = room;
-        document.getElementById('inputTeacherName').focus();
-        setMgmtMsg('', '');
+      // ── CHROMECART EDIT MODAL ──
+      function openCartModal(cartName) {
+        editingCartOriginalName = cartName;
+        cartDeletedRows = [];
+
+        if (cartName) {
+          // Edit mode
+          var info = globalTeachers[cartName] || {};
+          document.getElementById('cartModalTitle').innerText = 'Edit Chromecart';
+          document.getElementById('cartModalNumber').value = info.cartNumber || '';
+          document.getElementById('cartModalName').value = cartName;
+          document.getElementById('cartModalRoom').value = info.room || '';
+          document.getElementById('cartDeleteBtn').classList.remove('hidden');
+          document.getElementById('cartDevicesSection').style.display = '';
+
+          cartModalDevices = (globalData[cartName] || []).map(function(d) {
+            return { rowIndex: d.rowIndex, slot: d.slot, serial: d.serial, model: d.model, status: d.status };
+          });
+        } else {
+          // Add mode
+          document.getElementById('cartModalTitle').innerText = 'Add Chromecart';
+          document.getElementById('cartModalNumber').value = '';
+          document.getElementById('cartModalName').value = '';
+          document.getElementById('cartModalRoom').value = '';
+          document.getElementById('cartDeleteBtn').classList.add('hidden');
+          document.getElementById('cartDevicesSection').style.display = 'none';
+          cartModalDevices = [];
+        }
+
+        renderCartDeviceList();
+        document.getElementById('cartModalOverlay').classList.remove('hidden');
+        document.getElementById('cartModalOverlay').style.display = 'flex';
       }
 
-      function saveTeacherEntry() {
-        var name = document.getElementById('inputTeacherName').value.trim();
-        var room = document.getElementById('inputRoomNumber').value.trim();
+      function closeCartModal() {
+        document.getElementById('cartModalOverlay').style.display = 'none';
+        document.getElementById('cartModalOverlay').classList.add('hidden');
+        editingCartOriginalName = null;
+        cartModalDevices = [];
+        cartDeletedRows = [];
+      }
+
+      function renderCartDeviceList() {
+        var list = document.getElementById('cartDeviceList');
+        if (cartModalDevices.length === 0) {
+          list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No devices. Click "+ Add Device" to add one.</p>';
+          return;
+        }
+        var html = '';
+        cartModalDevices.forEach(function(dev, idx) {
+          html += '<div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-b-0 bg-white">' +
+            '<input type="text" value="' + escHtml(dev.slot || '') + '" placeholder="Slot" data-field="slot" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
+            '<input type="text" value="' + escHtml(dev.serial || '') + '" placeholder="Serial" data-field="serial" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="flex-1 min-w-0 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono box-border">' +
+            '<input type="text" value="' + escHtml(dev.model || '') + '" placeholder="Model" data-field="model" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-24 sm:w-32 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
+            '<button type="button" onclick="removeCartDevice(' + idx + ')" class="bg-transparent border-none text-gray-400 hover:text-broken cursor-pointer text-base leading-none p-1 transition-colors flex-shrink-0" title="Remove">&times;</button>' +
+            '</div>';
+        });
+        list.innerHTML = html;
+      }
+
+      function updateCartDevice(el) {
+        var idx = parseInt(el.getAttribute('data-idx'), 10);
+        var field = el.getAttribute('data-field');
+        if (cartModalDevices[idx]) cartModalDevices[idx][field] = el.value;
+      }
+
+      function addCartDevice() {
+        cartModalDevices.push({ rowIndex: null, slot: '', serial: '', model: '', status: 'Working' });
+        renderCartDeviceList();
+        // Focus the last slot input
+        var inputs = document.getElementById('cartDeviceList').querySelectorAll('input[data-field="slot"]');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }
+
+      function removeCartDevice(idx) {
+        var dev = cartModalDevices[idx];
+        if (dev && dev.rowIndex) {
+          cartDeletedRows.push(dev.rowIndex);
+        }
+        cartModalDevices.splice(idx, 1);
+        renderCartDeviceList();
+      }
+
+      function saveCartModal() {
+        var name = document.getElementById('cartModalName').value.trim();
+        var room = document.getElementById('cartModalRoom').value.trim();
+        var cartNumber = document.getElementById('cartModalNumber').value.trim();
 
         if (!name) {
-          setMgmtMsg('Cart name is required.', 'error');
+          showToast('Cart name is required.', 'error');
           return;
         }
 
-        if (name.length > 100) {
-          setMgmtMsg('Cart name is too long (max 100 characters).', 'error');
-          return;
-        }
-
-        var btn = document.getElementById('btnSaveTeacher');
+        var btn = document.getElementById('cartSaveBtn');
         btn.disabled = true;
         btn.innerText = 'Saving...';
-        setMgmtMsg('', '');
+
+        function onSuccess() {
+          btn.disabled = false;
+          btn.innerText = 'Save';
+          closeCartModal();
+          showToast('Chromecart saved successfully.', 'success');
+          // Reload all data
+          document.getElementById('loader').style.display = 'block';
+          document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
+          document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
+          document.getElementById('app').style.display = 'none';
+          document.getElementById('toolbar').style.display = 'none';
+          google.script.run.withSuccessHandler(renderApp).withFailureHandler(function(err) {
+            document.getElementById('loader').style.display = 'none';
+            changeLayout();
+            document.getElementById('toolbar').style.display = 'flex';
+            showToast('Saved but refresh failed. Please reload.', 'error');
+          }).getAppData();
+        }
+
+        function onFailure(err) {
+          btn.disabled = false;
+          btn.innerText = 'Save';
+          showToast('Failed to save: ' + (err.message || err), 'error');
+        }
+
+        if (editingCartOriginalName) {
+          // Edit mode — use updateChromecart
+          google.script.run
+            .withSuccessHandler(onSuccess)
+            .withFailureHandler(onFailure)
+            .updateChromecart({
+              originalName: editingCartOriginalName,
+              name: name,
+              room: room,
+              cartNumber: cartNumber,
+              devices: cartModalDevices,
+              deletedRows: cartDeletedRows
+            });
+        } else {
+          // Add mode — use saveTeacher
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.status === 'error') {
+                onFailure({ message: result.message });
+                return;
+              }
+              onSuccess();
+            })
+            .withFailureHandler(onFailure)
+            .saveTeacher({ teacherName: name, roomNumber: room, cartNumber: cartNumber });
+        }
+      }
+
+      function deleteCart() {
+        if (!editingCartOriginalName) return;
+        if (!confirm('Delete chromecart "' + editingCartOriginalName + '"? This cannot be undone.')) return;
+
+        var btn = document.getElementById('cartDeleteBtn');
+        btn.disabled = true;
+        btn.innerText = 'Deleting...';
 
         google.script.run
-          .withSuccessHandler(function(result) {
+          .withSuccessHandler(function() {
             btn.disabled = false;
-            btn.innerText = 'Save Chromecart';
-
-            if (result.status === 'error') {
-              setMgmtMsg(result.message, 'error');
-              showToast(result.message, 'error');
-              return;
-            }
-
-            globalTeachers[result.teacher] = result.room;
-            renderTeacherTable();
-            renderCards();
-
-            document.getElementById('inputTeacherName').value = '';
-            document.getElementById('inputRoomNumber').value  = '';
-
-            var action = result.status === 'added' ? 'Added' : 'Updated';
-            setMgmtMsg(action + ': ' + result.teacher + (result.room ? ' \u2014 Room ' + result.room : ''), 'success');
-            showToast(action + ' chromecart: ' + result.teacher, 'success');
+            btn.innerText = 'Delete Chromecart';
+            closeCartModal();
+            showToast('Chromecart deleted.', 'success');
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
+            document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('toolbar').style.display = 'none';
+            google.script.run.withSuccessHandler(renderApp).withFailureHandler(function() {
+              document.getElementById('loader').style.display = 'none';
+              changeLayout();
+              document.getElementById('toolbar').style.display = 'flex';
+            }).getAppData();
           })
           .withFailureHandler(function(err) {
             btn.disabled = false;
-            btn.innerText = 'Save Chromecart';
-            setMgmtMsg('Error: ' + err.message, 'error');
-            showToast('Failed to save chromecart: ' + (err.message || err), 'error');
+            btn.innerText = 'Delete Chromecart';
+            showToast('Failed to delete: ' + (err.message || err), 'error');
           })
-          .saveTeacher({ teacherName: name, roomNumber: room });
+          .deleteTeacher(editingCartOriginalName);
       }
 
       function setMgmtMsg(text, type) {
         var el = document.getElementById('mgmtMsg');
         el.innerText = text;
-        el.className = 'text-sm py-1.5 min-h-[1.2em]';
-        if (type === 'success') el.classList.add('text-good');
-        if (type === 'error') el.classList.add('text-broken');
+        el.className = 'text-sm text-gray-400';
+        if (type === 'success') el.className = 'text-sm text-good';
+        if (type === 'error') el.className = 'text-sm text-broken';
       }
 
       // ── AUDIT LOG MODAL ──
@@ -522,7 +700,8 @@
         cards.forEach(function(card) {
           var name = card.getAttribute('data-teacher').toLowerCase();
           var room = (card.getAttribute('data-room') || '').toLowerCase();
-          if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1) {
+          var cartNum = (card.getAttribute('data-cart-number') || '').toLowerCase();
+          if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1 || cartNum.indexOf(query) !== -1) {
             card.style.display = '';
             shown++;
           } else {
@@ -601,37 +780,68 @@
         if (icon) icon.style.transform = 'rotate(0deg)';
       }
 
+      // ── LAYOUT ──
+      function changeLayout() {
+        var select = document.getElementById('layoutSelect');
+        var cols = select ? select.value : '1';
+        var app = document.getElementById('app');
+        if (cols === '1') {
+          app.className = 'flex flex-col gap-4 max-w-[900px] mx-auto';
+          app.style.gridTemplateColumns = '';
+          app.style.maxWidth = '';
+          app.style.display = 'flex';
+        } else {
+          app.className = 'grid gap-4 mx-auto';
+          app.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+          app.style.maxWidth = cols === '2' ? '1200px' : '1600px';
+          app.style.display = 'grid';
+        }
+      }
+
       // ── RENDER CHROMECART CARDS ──
       function renderCards() {
         var app = document.getElementById('app');
         app.innerHTML = '';
 
-        var teachers = Object.keys(globalData).sort();
+        var teachers = Object.keys(globalData).sort(function(a, b) {
+          var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
+          var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
+          return numA !== numB ? numA - numB : a.localeCompare(b);
+        });
 
         teachers.forEach(function(teacher) {
+          var info = globalTeachers[teacher] || {};
+          var room = info.room || '';
+          var cartNumber = info.cartNumber || '';
+
           var card = document.createElement('div');
           card.className = 'teacher-card bg-card rounded-lg shadow-sm p-3 sm:p-4';
           card.setAttribute('data-teacher', teacher);
-          var room = globalTeachers[teacher] || '';
           card.setAttribute('data-room', room);
+          card.setAttribute('data-cart-number', cartNumber);
 
           // --- Collapsible Header ---
           var header = document.createElement('div');
           header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2 sm:mb-2.5 pb-2 cursor-pointer select-none';
 
-          var info = document.createElement('div');
-          info.className = 'flex-1';
+          var infoDiv = document.createElement('div');
+          infoDiv.className = 'flex-1 min-w-0';
 
-          var nameEl = document.createElement('div');
-          nameEl.className = 'font-medium text-[1.1em] text-gray-700 transition-colors';
-          nameEl.innerText = teacher;
-          info.appendChild(nameEl);
+          // Cart number — large prominent text
+          var cartNumEl = document.createElement('div');
+          cartNumEl.className = 'text-xl font-bold text-gray-800 transition-colors';
+          cartNumEl.innerText = cartNumber ? 'Cart #' + cartNumber : teacher;
+          infoDiv.appendChild(cartNumEl);
 
-          if (room) {
-            var roomEl = document.createElement('div');
-            roomEl.className = 'text-xs text-gray-400 mt-0.5';
-            roomEl.innerText = 'Room ' + room;
-            info.appendChild(roomEl);
+          // Subtitle: teacher name + room
+          var subtitleParts = [];
+          if (cartNumber) subtitleParts.push(teacher);
+          if (room) subtitleParts.push('Room ' + room);
+          if (subtitleParts.length) {
+            var subtitleEl = document.createElement('div');
+            subtitleEl.className = 'text-sm text-gray-500 mt-0.5';
+            subtitleEl.innerText = subtitleParts.join(' \u2022 ');
+            infoDiv.appendChild(subtitleEl);
           }
 
           var devices = globalData[teacher];
@@ -643,14 +853,29 @@
             statsText += ' \u2022 <span class="text-broken font-medium">' + brokenCount + ' broken</span>';
           }
           statsEl.innerHTML = statsText;
-          info.appendChild(statsEl);
+          infoDiv.appendChild(statsEl);
+
+          // Right side: Edit button + collapse icon
+          var rightSide = document.createElement('div');
+          rightSide.className = 'flex items-center gap-2 flex-shrink-0 ml-2';
+
+          var editBtn = document.createElement('button');
+          editBtn.className = 'bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans font-medium hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200';
+          editBtn.innerText = 'Edit';
+          editBtn.onclick = function(e) {
+            e.stopPropagation();
+            openCartModal(teacher);
+          };
 
           var icon = document.createElement('span');
-          icon.className = 'collapse-icon text-xs text-gray-400 transition-transform duration-300 flex-shrink-0 ml-2 mt-1';
+          icon.className = 'collapse-icon text-xs text-gray-400 transition-transform duration-300';
           icon.innerHTML = '&#9660;';
 
-          header.appendChild(info);
-          header.appendChild(icon);
+          rightSide.appendChild(editBtn);
+          rightSide.appendChild(icon);
+
+          header.appendChild(infoDiv);
+          header.appendChild(rightSide);
           header.onclick = function() {
             if (card.classList.contains('collapsed')) {
               expandCard(card);
@@ -658,8 +883,8 @@
               collapseCard(card);
             }
           };
-          header.onmouseenter = function() { nameEl.classList.add('text-primary'); };
-          header.onmouseleave = function() { nameEl.classList.remove('text-primary'); };
+          header.onmouseenter = function() { cartNumEl.classList.add('text-primary'); };
+          header.onmouseleave = function() { cartNumEl.classList.remove('text-primary'); };
 
           card.appendChild(header);
 
@@ -691,7 +916,7 @@
 
         document.getElementById('loader').style.display = 'none';
         document.getElementById('toolbar').style.display = 'flex';
-        app.style.display = 'flex';
+        changeLayout();
 
         updateTeacherCount(teachers.length, teachers.length);
       }
@@ -939,7 +1164,7 @@
             .withSuccessHandler(renderApp)
             .withFailureHandler(function(err) {
               document.getElementById('loader').style.display = 'none';
-              document.getElementById('app').style.display = 'flex';
+              changeLayout();
               document.getElementById('toolbar').style.display = 'flex';
               showToast('Data saved but failed to refresh. Please reload the page.', 'error');
             })
