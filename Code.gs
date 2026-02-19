@@ -319,7 +319,7 @@ function submitUpdate(formObject) {
     }
 
     var status = (formObject.status || '').toString().trim();
-    if (status !== 'Working' && status !== 'Broken') {
+    if (status !== 'Working' && status !== 'Replace') {
       throw new Error("Invalid status value.");
     }
 
@@ -327,35 +327,50 @@ function submitUpdate(formObject) {
     var isCustom = formObject.isCustomSerial === 'true';
 
     // 1. Update Inventory Row
-    invSheet.getRange(rowIndex, 5).setValue(status);
-    invSheet.getRange(rowIndex, 7).setValue(new Date());
-
-    if (newSerial && newSerial !== "") {
-      invSheet.getRange(rowIndex, 6).setValue(newSerial);
-
-      // 2. Only mark as Deployed in pool if serial came from the pool
-      if (!isCustom) {
-        var poolSheet = ss.getSheetByName(SHEET_NAME_REPLACEMENT_POOL);
-        if (poolSheet && poolSheet.getLastRow() > 1) {
-          var poolData = poolSheet.getDataRange().getValues();
-          for (var i = 0; i < poolData.length; i++) {
-            if (poolData[i][0] == newSerial) {
-              poolSheet.getRange(i + 1, 3).setValue("Deployed");
-              break;
+    // If action is Replace, we update the serial and set status to Working.
+    // If action is Working, we just ensure status is Working.
+    
+    if (status === 'Replace') {
+        if (newSerial && newSerial !== "") {
+            invSheet.getRange(rowIndex, 4).setValue(newSerial); // Update Serial (Col 4)
+            invSheet.getRange(rowIndex, 5).setValue("Working"); // Set Status (Col 5) to Working
+            invSheet.getRange(rowIndex, 6).setValue("Replaced: " + new Date().toLocaleDateString()); // Optional: Log replacement in Col 6 or leave empty
+            
+            // Mark as Deployed in pool if from pool
+            if (!isCustom) {
+                var poolSheet = ss.getSheetByName(SHEET_NAME_REPLACEMENT_POOL);
+                if (poolSheet && poolSheet.getLastRow() > 1) {
+                    var poolData = poolSheet.getDataRange().getValues();
+                    for (var i = 0; i < poolData.length; i++) {
+                        if (poolData[i][0] == newSerial) {
+                            poolSheet.getRange(i + 1, 3).setValue("Deployed");
+                            break;
+                        }
+                    }
+                }
             }
-          }
+        } else {
+             // If Replace selected but no serial provided? Frontend validation should catch this, but just in case.
+             // We might just set status to Replace? No, user wants to replace it.
+             // Let's assume if no serial, we can't replace.
+             throw new Error("Replacement serial is required.");
         }
-      }
+    } else {
+        // Just update status
+        invSheet.getRange(rowIndex, 5).setValue(status);
+        // Clear replacement col? Maybe not.
     }
+    
+    invSheet.getRange(rowIndex, 7).setValue(new Date());
 
     // 3. Audit log with context
     var currentRow = invSheet.getRange(rowIndex, 1, 1, 7).getValues()[0];
     var targetDesc = currentRow[0] + ' / ' + currentRow[2] + ' (' + currentRow[3] + ')';
-    var detailsMsg = 'Status set to ' + status;
-    if (newSerial) {
-      detailsMsg += '. Replacement assigned: ' + newSerial + (isCustom ? ' (custom)' : ' (from pool)');
+    var detailsMsg = 'Action: ' + status;
+    if (status === 'Replace' && newSerial) {
+      detailsMsg += '. New Serial: ' + newSerial + (isCustom ? ' (custom)' : ' (from pool)');
     }
-    logAudit('Status Update', targetDesc, detailsMsg);
+    logAudit('Device Update', targetDesc, detailsMsg);
 
     invalidateCache();
     return "Success";

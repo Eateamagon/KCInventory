@@ -745,7 +745,9 @@
             'Model: ' + escHtml(device.model) + '<br>Serial: <b>' + escHtml(device.serial) + '</b><br>Current Status: ' + escHtml(device.status);
 
         document.getElementById('rowIndex').value = device.rowIndex;
-        document.getElementById('statusSelect').value = device.status || 'Working';
+        var currentStatus = device.status || 'Working';
+        if (currentStatus === 'Broken') currentStatus = 'Replace';
+        document.getElementById('statusSelect').value = currentStatus;
 
         // Reset all replacement controls
         document.getElementById('poolSearch').value = '';
@@ -859,7 +861,7 @@
     function toggleReplacement() {
         var status = document.getElementById('statusSelect').value;
         var container = document.getElementById('replacementContainer');
-        if (status === 'Broken') {
+        if (status === 'Replace') {
             container.style.display = 'block';
         } else {
             container.style.display = 'none';
@@ -884,7 +886,7 @@
         }
 
         var status = document.getElementById('statusSelect').value;
-        if (status === 'Broken' && serialSource === 'custom') {
+        if (status === 'Replace' && serialSource === 'custom') {
             var customCheck = document.getElementById('customSerialInput').value.trim();
             if (customCheck && customCheck.length < 3) {
                 showToast('Serial number is too short (minimum 3 characters).', 'error');
