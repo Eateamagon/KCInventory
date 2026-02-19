@@ -41,6 +41,21 @@
         vertical-align: middle;
         margin-right: 6px;
       }
+      /* Mobile scrolling optimizations */
+      .scroll-touch {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      body {
+        touch-action: manipulation;
+      }
+      #app {
+        touch-action: pan-y;
+      }
+      .teacher-card {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 200px;
+      }
     </style>
   </head>
   <body class="bg-surface font-sans m-0 p-3 sm:p-5">
@@ -48,14 +63,14 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:max-w-[380px]"></div>
 
-    <!-- TEACHER MANAGEMENT PANEL -->
+    <!-- CHROMECART MANAGEMENT PANEL -->
     <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
       <div
         class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
         onclick="toggleMgmtPanel()"
         id="mgmtPanelHeader"
       >
-        <span>Teacher Management</span>
+        <span>Chromecart Management</span>
         <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
       </div>
       <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="mgmtPanelBody">
@@ -63,7 +78,7 @@
         <!-- Add / Edit form -->
         <div class="flex gap-2.5 items-end flex-wrap mb-4 pt-3 sm:pt-[18px]">
           <div class="flex flex-col gap-1 w-full sm:flex-1 sm:min-w-[140px]">
-            <label for="inputTeacherName" class="text-sm text-gray-500 font-medium !block !mt-0">Teacher Name</label>
+            <label for="inputTeacherName" class="text-sm text-gray-500 font-medium !block !mt-0">Cart Name</label>
             <input type="text" id="inputTeacherName" placeholder="e.g. Smith" autocomplete="off"
               class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
@@ -72,37 +87,40 @@
             <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off"
               class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-            id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Teacher</button>
+          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
+            id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Chromecart</button>
         </div>
         <div class="text-sm py-1.5 min-h-[1.2em]" id="mgmtMsg"></div>
 
-        <!-- Existing teachers table -->
+        <!-- Existing chromecarts table -->
         <div id="teacherTableWrap" class="pb-[18px]"></div>
       </div>
     </div>
 
-    <!-- AUDIT LOG PANEL -->
-    <div id="auditPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
-      <div
-        class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none font-medium text-gray-700 hover:text-primary transition-colors"
-        onclick="toggleAuditPanel()"
-        id="auditPanelHeader"
-      >
-        <span>Audit Log</span>
-        <span class="text-xs text-gray-400 transition-transform duration-300" id="auditCollapseIcon" style="transform:rotate(-90deg);">&#9660;</span>
-      </div>
-      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="auditPanelBody">
-        <div class="pt-3 sm:pt-[18px] pb-[18px]">
-          <div class="flex justify-between items-center mb-3">
+    <!-- AUDIT LOG FLOATING BUTTON -->
+    <button id="auditFab" class="fixed bottom-4 right-4 z-50 bg-gray-600 text-white rounded-full w-11 h-11 shadow-lg flex items-center justify-center hover:bg-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-none" onclick="toggleAuditModal()" title="Audit Log">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+    </button>
+
+    <!-- AUDIT LOG MODAL -->
+    <div id="auditModal" class="hidden fixed inset-0 bg-black/50 z-[150] justify-center items-center overscroll-contain">
+      <div class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[640px] max-h-[80vh] overflow-hidden shadow-xl flex flex-col">
+        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <h3 class="text-lg font-medium text-gray-800 m-0">Audit Log</h3>
             <span class="text-sm text-gray-400" id="auditCount"></span>
+          </div>
+          <div class="flex items-center gap-2">
             <button
-              class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+              class="bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0"
               onclick="loadAuditLog()"
               id="btnRefreshAudit"
             >Refresh</button>
+            <button onclick="closeAuditModal()" class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
           </div>
-          <div id="auditLogWrap" class="text-sm text-gray-400 text-center py-3">Open this panel to load audit entries.</div>
+        </div>
+        <div class="overflow-y-auto flex-1 scroll-touch p-4" id="auditLogWrap">
+          <p class="text-gray-400 text-sm text-center py-3">Loading audit entries...</p>
         </div>
       </div>
     </div>
@@ -111,13 +129,13 @@
     <div class="bg-card rounded-lg shadow-sm mb-5 px-3 sm:px-[18px] py-3 sm:py-3.5 flex items-center gap-2 sm:gap-3 flex-wrap" id="toolbar" style="display:none;">
       <div class="w-full sm:flex-1 sm:min-w-[200px] relative">
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
-        <input type="text" id="teacherSearch" placeholder="Search for a teacher..." oninput="onTeacherSearch()" autocomplete="off"
+        <input type="text" id="teacherSearch" placeholder="Search for a chromecart..." oninput="onTeacherSearch()" autocomplete="off"
           class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
       </div>
       <div class="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
           onclick="expandAll()">Expand All</button>
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
           onclick="collapseAll()">Collapse All</button>
       </div>
       <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
@@ -127,8 +145,8 @@
     <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
 
     <!-- DEVICE EDIT MODAL -->
-    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center">
-      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
+    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center overscroll-contain">
+      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl scroll-touch">
         <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
         <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
 
@@ -150,12 +168,12 @@
             <!-- Source toggle: Pool vs Custom -->
             <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
               <button type="button" id="tabPool"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white"
                 onclick="switchSerialSource('pool')">
                 From Pool
               </button>
               <button type="button" id="tabCustom"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 onclick="switchSerialSource('custom')">
                 Custom Serial
               </button>
@@ -186,7 +204,7 @@
                 </select>
               </div>
 
-              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50" id="poolList"></div>
+              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50 scroll-touch" id="poolList"></div>
             </div>
 
             <!-- Custom serial input panel (hidden by default) -->
@@ -208,8 +226,8 @@
           </div>
 
           <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-6">
-            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 transition-colors w-full sm:w-auto" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 transition-colors w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
+            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
           </div>
         </form>
       </div>
@@ -222,7 +240,7 @@
       var selectedReplacement = '';
       var serialSource = 'pool';
       var mgmtPanelOpen = false;
-      var auditPanelOpen = false;
+      var auditModalOpen = false;
       var auditLoaded = false;
 
       // ── TOAST NOTIFICATIONS ──
@@ -283,7 +301,7 @@
         renderCards();
       }
 
-      // ── TEACHER MANAGEMENT PANEL ──
+      // ── CHROMECART MANAGEMENT PANEL ──
       function toggleMgmtPanel() {
         mgmtPanelOpen = !mgmtPanelOpen;
         var body = document.getElementById('mgmtPanelBody');
@@ -312,13 +330,13 @@
         var keys = Object.keys(globalTeachers).sort();
 
         if (keys.length === 0) {
-          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No teachers added yet. Use the form above to add one.</p>';
+          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No chromecarts added yet. Use the form above to add one.</p>';
           return;
         }
 
         var html = '<table class="w-full border-collapse text-sm">' +
           '<thead><tr>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Teacher Name</th>' +
+          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Cart Name</th>' +
           '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Room</th>' +
           '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium"></th>' +
           '</tr></thead><tbody>';
@@ -329,9 +347,9 @@
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light transition-colors" onclick="prefillTeacher(' +
+              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="prefillTeacher(' +
               JSON.stringify(name) + ',' + JSON.stringify(globalTeachers[name] || '') +
-            ')">Edit</button></td>' +
+            ')">Edit Chromecart</button></td>' +
             '</tr>';
         });
 
@@ -351,12 +369,12 @@
         var room = document.getElementById('inputRoomNumber').value.trim();
 
         if (!name) {
-          setMgmtMsg('Teacher name is required.', 'error');
+          setMgmtMsg('Cart name is required.', 'error');
           return;
         }
 
         if (name.length > 100) {
-          setMgmtMsg('Teacher name is too long (max 100 characters).', 'error');
+          setMgmtMsg('Cart name is too long (max 100 characters).', 'error');
           return;
         }
 
@@ -368,7 +386,7 @@
         google.script.run
           .withSuccessHandler(function(result) {
             btn.disabled = false;
-            btn.innerText = 'Save Teacher';
+            btn.innerText = 'Save Chromecart';
 
             if (result.status === 'error') {
               setMgmtMsg(result.message, 'error');
@@ -385,13 +403,13 @@
 
             var action = result.status === 'added' ? 'Added' : 'Updated';
             setMgmtMsg(action + ': ' + result.teacher + (result.room ? ' \u2014 Room ' + result.room : ''), 'success');
-            showToast(action + ' teacher: ' + result.teacher, 'success');
+            showToast(action + ' chromecart: ' + result.teacher, 'success');
           })
           .withFailureHandler(function(err) {
             btn.disabled = false;
-            btn.innerText = 'Save Teacher';
+            btn.innerText = 'Save Chromecart';
             setMgmtMsg('Error: ' + err.message, 'error');
-            showToast('Failed to save teacher: ' + (err.message || err), 'error');
+            showToast('Failed to save chromecart: ' + (err.message || err), 'error');
           })
           .saveTeacher({ teacherName: name, roomNumber: room });
       }
@@ -404,25 +422,25 @@
         if (type === 'error') el.classList.add('text-broken');
       }
 
-      // ── AUDIT LOG PANEL ──
-      function toggleAuditPanel() {
-        auditPanelOpen = !auditPanelOpen;
-        var body = document.getElementById('auditPanelBody');
-        var icon = document.getElementById('auditCollapseIcon');
-        var header = document.getElementById('auditPanelHeader');
+      // ── AUDIT LOG MODAL ──
+      function toggleAuditModal() {
+        auditModalOpen = !auditModalOpen;
+        var modal = document.getElementById('auditModal');
 
-        if (auditPanelOpen) {
-          body.style.maxHeight = '800px';
-          body.style.opacity = '1';
-          icon.style.transform = 'rotate(0deg)';
-          header.classList.add('border-b', 'border-gray-200');
+        if (auditModalOpen) {
+          modal.classList.remove('hidden');
+          modal.style.display = 'flex';
           if (!auditLoaded) loadAuditLog();
         } else {
-          body.style.maxHeight = '0';
-          body.style.opacity = '0';
-          icon.style.transform = 'rotate(-90deg)';
-          header.classList.remove('border-b', 'border-gray-200');
+          closeAuditModal();
         }
+      }
+
+      function closeAuditModal() {
+        auditModalOpen = false;
+        var modal = document.getElementById('auditModal');
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
       }
 
       function loadAuditLog() {
@@ -460,7 +478,7 @@
 
         countEl.innerText = entries.length + ' recent entr' + (entries.length === 1 ? 'y' : 'ies');
 
-        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md">';
+        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md scroll-touch">';
         html += '<table class="w-full border-collapse text-sm">';
         html += '<thead class="sticky top-0 bg-white"><tr>';
         html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">When</th>';
@@ -494,7 +512,7 @@
         wrap.innerHTML = html;
       }
 
-      // ── TEACHER SEARCH ──
+      // ── CHROMECART SEARCH ──
       function onTeacherSearch() {
         var query = document.getElementById('teacherSearch').value.toLowerCase().trim();
         var cards = document.querySelectorAll('.teacher-card');
@@ -520,7 +538,7 @@
             noResults.className = 'text-center text-gray-400 text-[0.95em] py-10 bg-card rounded-lg shadow-sm';
             document.getElementById('app').appendChild(noResults);
           }
-          noResults.innerText = 'No teachers found matching "' + document.getElementById('teacherSearch').value.trim() + '"';
+          noResults.innerText = 'No chromecarts found matching "' + document.getElementById('teacherSearch').value.trim() + '"';
           noResults.style.display = '';
         } else if (noResults) {
           noResults.style.display = 'none';
@@ -532,9 +550,9 @@
       function updateTeacherCount(shown, total) {
         var el = document.getElementById('teacherCount');
         if (shown === total) {
-          el.innerText = total + ' teacher' + (total !== 1 ? 's' : '');
+          el.innerText = total + ' chromecart' + (total !== 1 ? 's' : '');
         } else {
-          el.innerText = shown + ' of ' + total + ' teacher' + (total !== 1 ? 's' : '');
+          el.innerText = shown + ' of ' + total + ' chromecart' + (total !== 1 ? 's' : '');
         }
       }
 
@@ -583,7 +601,7 @@
         if (icon) icon.style.transform = 'rotate(0deg)';
       }
 
-      // ── RENDER TEACHER CARDS ──
+      // ── RENDER CHROMECART CARDS ──
       function renderCards() {
         var app = document.getElementById('app');
         app.innerHTML = '';
@@ -687,8 +705,8 @@
         var customPanel = document.getElementById('customPanel');
 
         if (source === 'pool') {
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
           poolPanel.classList.remove('hidden');
           customPanel.classList.add('hidden');
           document.getElementById('customSerialInput').value = '';
@@ -696,8 +714,8 @@
           document.getElementById('isCustomSerial').value = 'false';
           document.getElementById('replacementSerial').value = selectedReplacement;
         } else {
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
           customPanel.classList.remove('hidden');
           poolPanel.classList.add('hidden');
           document.getElementById('isCustomSerial').value = 'true';

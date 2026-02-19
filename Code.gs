@@ -12,6 +12,39 @@ function safeExecute(fn) {
   }
 }
 
+// --- CACHE HELPERS ---
+var CACHE_TTL = 300; // 5 minutes
+var CACHE_KEY = 'appData';
+
+function getCachedAppData() {
+  try {
+    var cached = CacheService.getScriptCache().get(CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch (e) {
+    Logger.log('Cache read error: ' + e.message);
+    return null;
+  }
+}
+
+function setCachedAppData(data) {
+  try {
+    var json = JSON.stringify(data);
+    if (json.length <= 100000) {
+      CacheService.getScriptCache().put(CACHE_KEY, json, CACHE_TTL);
+    }
+  } catch (e) {
+    Logger.log('Cache write error: ' + e.message);
+  }
+}
+
+function invalidateCache() {
+  try {
+    CacheService.getScriptCache().remove(CACHE_KEY);
+  } catch (e) {
+    Logger.log('Cache invalidation error: ' + e.message);
+  }
+}
+
 // --- AUDIT LOGGING ---
 function logAudit(action, target, details) {
   try {
@@ -52,6 +85,13 @@ function doGet() {
 // --- API: GET DATA ---
 function getAppData() {
   return safeExecute(function() {
+    // Check cache first for fast path
+    var cached = getCachedAppData();
+    if (cached) {
+      cached.user = Session.getActiveUser().getEmail();
+      return cached;
+    }
+
     var ss = SpreadsheetApp.openById(SHEET_ID);
 
     // 1. Get Inventory
@@ -77,7 +117,7 @@ function getAppData() {
       .filter(function(row) { return row[2] === "Available"; })
       .map(function(row) { return { serial: row[0], model: row[1] }; });
 
-    // 3. Get Teacher-Room mappings (sheet may not exist yet)
+    // 3. Get Chromecart-Room mappings (sheet may not exist yet)
     var teacherRooms = {};
     var teacherSheet = ss.getSheetByName("Teachers");
     if (teacherSheet && teacherSheet.getLastRow() > 1) {
@@ -104,12 +144,17 @@ function getAppData() {
       });
     });
 
-    return {
+    var result = {
       inventory: groupedData,
       replacements: availableReplacements,
-      teacherRooms: teacherRooms,
-      user: Session.getActiveUser().getEmail()
+      teacherRooms: teacherRooms
     };
+
+    // Store in cache (without user field, as that varies per user)
+    setCachedAppData(result);
+
+    result.user = Session.getActiveUser().getEmail();
+    return result;
   });
 }
 
@@ -128,24 +173,26 @@ function saveTeacher(formObject) {
     var name = (formObject.teacherName || '').toString().trim();
     var room = (formObject.roomNumber || '').toString().trim();
 
-    if (!name) return { status: "error", message: "Teacher name is required." };
-    if (name.length > 100) return { status: "error", message: "Teacher name is too long." };
+    if (!name) return { status: "error", message: "Cart name is required." };
+    if (name.length > 100) return { status: "error", message: "Cart name is too long." };
     if (room.length > 20) return { status: "error", message: "Room number is too long." };
 
-    // Update existing row if teacher already exists (case-insensitive)
+    // Update existing row if chromecart already exists (case-insensitive)
     var data = teacherSheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
       if (data[i][0].toString().toLowerCase() === name.toLowerCase()) {
         teacherSheet.getRange(i + 1, 1).setValue(name);
         teacherSheet.getRange(i + 1, 2).setValue(room);
-        logAudit('Teacher Updated', name, 'Room set to ' + (room || '(none)'));
+        logAudit('Chromecart Updated', name, 'Room set to ' + (room || '(none)'));
+        invalidateCache();
         return { status: "updated", teacher: name, room: room };
       }
     }
 
     // Otherwise append a new row
     teacherSheet.appendRow([name, room]);
-    logAudit('Teacher Added', name, 'Room: ' + (room || '(none)'));
+    logAudit('Chromecart Added', name, 'Room: ' + (room || '(none)'));
+    invalidateCache();
     return { status: "added", teacher: name, room: room };
   });
 }
@@ -154,7 +201,7 @@ function saveTeacher(formObject) {
 function deleteTeacher(teacherName) {
   return safeExecute(function() {
     if (!teacherName || !teacherName.toString().trim()) {
-      return { status: "error", message: "Teacher name is required." };
+      return { status: "error", message: "Cart name is required." };
     }
 
     var ss = SpreadsheetApp.openById(SHEET_ID);
@@ -165,7 +212,8 @@ function deleteTeacher(teacherName) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][0].toString().toLowerCase() === teacherName.toLowerCase()) {
         teacherSheet.deleteRow(i + 1);
-        logAudit('Teacher Deleted', teacherName, 'Teacher removed from system');
+        logAudit('Chromecart Deleted', teacherName, 'Chromecart removed from system');
+        invalidateCache();
         return { status: "deleted" };
       }
     }
@@ -224,6 +272,7 @@ function submitUpdate(formObject) {
     }
     logAudit('Status Update', targetDesc, detailsMsg);
 
+    invalidateCache();
     return "Success";
   });
 }
