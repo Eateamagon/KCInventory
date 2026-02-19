@@ -41,6 +41,21 @@
         vertical-align: middle;
         margin-right: 6px;
       }
+      /* Mobile scrolling optimizations */
+      .scroll-touch {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      body {
+        touch-action: manipulation;
+      }
+      #app {
+        touch-action: pan-y;
+      }
+      .teacher-card {
+        content-visibility: auto;
+        contain-intrinsic-size: 0 200px;
+      }
     </style>
   </head>
   <body class="bg-surface font-sans m-0 p-3 sm:p-5">
@@ -72,7 +87,7 @@
             <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off"
               class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-200"
             id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Teacher</button>
         </div>
         <div class="text-sm py-1.5 min-h-[1.2em]" id="mgmtMsg"></div>
@@ -97,7 +112,7 @@
           <div class="flex justify-between items-center mb-3">
             <span class="text-sm text-gray-400" id="auditCount"></span>
             <button
-              class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+              class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0"
               onclick="loadAuditLog()"
               id="btnRefreshAudit"
             >Refresh</button>
@@ -115,9 +130,9 @@
           class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
       </div>
       <div class="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
           onclick="expandAll()">Expand All</button>
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
           onclick="collapseAll()">Collapse All</button>
       </div>
       <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
@@ -127,8 +142,8 @@
     <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
 
     <!-- DEVICE EDIT MODAL -->
-    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center">
-      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
+    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center overscroll-contain">
+      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl scroll-touch">
         <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
         <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
 
@@ -150,12 +165,12 @@
             <!-- Source toggle: Pool vs Custom -->
             <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
               <button type="button" id="tabPool"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white"
                 onclick="switchSerialSource('pool')">
                 From Pool
               </button>
               <button type="button" id="tabCustom"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 onclick="switchSerialSource('custom')">
                 Custom Serial
               </button>
@@ -186,7 +201,7 @@
                 </select>
               </div>
 
-              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50" id="poolList"></div>
+              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50 scroll-touch" id="poolList"></div>
             </div>
 
             <!-- Custom serial input panel (hidden by default) -->
@@ -208,8 +223,8 @@
           </div>
 
           <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-6">
-            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 transition-colors w-full sm:w-auto" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 transition-colors w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
+            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
           </div>
         </form>
       </div>
@@ -329,7 +344,7 @@
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light transition-colors" onclick="prefillTeacher(' +
+              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="prefillTeacher(' +
               JSON.stringify(name) + ',' + JSON.stringify(globalTeachers[name] || '') +
             ')">Edit</button></td>' +
             '</tr>';
@@ -460,7 +475,7 @@
 
         countEl.innerText = entries.length + ' recent entr' + (entries.length === 1 ? 'y' : 'ies');
 
-        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md">';
+        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md scroll-touch">';
         html += '<table class="w-full border-collapse text-sm">';
         html += '<thead class="sticky top-0 bg-white"><tr>';
         html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">When</th>';
@@ -687,8 +702,8 @@
         var customPanel = document.getElementById('customPanel');
 
         if (source === 'pool') {
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
           poolPanel.classList.remove('hidden');
           customPanel.classList.add('hidden');
           document.getElementById('customSerialInput').value = '';
@@ -696,8 +711,8 @@
           document.getElementById('isCustomSerial').value = 'false';
           document.getElementById('replacementSerial').value = selectedReplacement;
         } else {
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
           customPanel.classList.remove('hidden');
           poolPanel.classList.add('hidden');
           document.getElementById('isCustomSerial').value = 'true';
