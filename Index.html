@@ -27,39 +27,52 @@
       }
     </script>
     <style type="text/tailwindcss">
-      /* Transition utilities for collapse animations */
       .collapse-animate {
         transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
       }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .spinner {
+        width: 18px; height: 18px;
+        border: 2px solid #e5e7eb;
+        border-top-color: #1a73e8;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
     </style>
   </head>
-  <body class="bg-surface font-sans m-0 p-5">
+  <body class="bg-surface font-sans m-0 p-3 sm:p-5">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:max-w-[380px]"></div>
 
     <!-- TEACHER MANAGEMENT PANEL -->
     <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
       <div
-        class="flex justify-between items-center px-[18px] py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
+        class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
         onclick="toggleMgmtPanel()"
         id="mgmtPanelHeader"
       >
         <span>Teacher Management</span>
         <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
       </div>
-      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-[18px] py-0" id="mgmtPanelBody">
+      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="mgmtPanelBody">
 
         <!-- Add / Edit form -->
-        <div class="flex gap-2.5 items-end flex-wrap mb-4 pt-[18px]">
-          <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+        <div class="flex gap-2.5 items-end flex-wrap mb-4 pt-3 sm:pt-[18px]">
+          <div class="flex flex-col gap-1 w-full sm:flex-1 sm:min-w-[140px]">
             <label for="inputTeacherName" class="text-sm text-gray-500 font-medium !block !mt-0">Teacher Name</label>
             <input type="text" id="inputTeacherName" placeholder="e.g. Smith" autocomplete="off"
-              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+              class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+          <div class="flex flex-col gap-1 w-full sm:flex-1 sm:min-w-[140px]">
             <label for="inputRoomNumber" class="text-sm text-gray-500 font-medium !block !mt-0">Room Number</label>
             <input type="text" id="inputRoomNumber" placeholder="e.g. 204" autocomplete="off"
-              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+              class="px-2.5 py-2.5 sm:py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
           </div>
-          <button class="bg-primary text-white px-[18px] py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap self-end hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          <button class="bg-primary text-white px-[18px] py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap w-full sm:w-auto sm:self-end hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             id="btnSaveTeacher" onclick="saveTeacherEntry()">Save Teacher</button>
         </div>
         <div class="text-sm py-1.5 min-h-[1.2em]" id="mgmtMsg"></div>
@@ -69,28 +82,53 @@
       </div>
     </div>
 
+    <!-- AUDIT LOG PANEL -->
+    <div id="auditPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
+      <div
+        class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none font-medium text-gray-700 hover:text-primary transition-colors"
+        onclick="toggleAuditPanel()"
+        id="auditPanelHeader"
+      >
+        <span>Audit Log</span>
+        <span class="text-xs text-gray-400 transition-transform duration-300" id="auditCollapseIcon" style="transform:rotate(-90deg);">&#9660;</span>
+      </div>
+      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="auditPanelBody">
+        <div class="pt-3 sm:pt-[18px] pb-[18px]">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm text-gray-400" id="auditCount"></span>
+            <button
+              class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+              onclick="loadAuditLog()"
+              id="btnRefreshAudit"
+            >Refresh</button>
+          </div>
+          <div id="auditLogWrap" class="text-sm text-gray-400 text-center py-3">Open this panel to load audit entries.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- SEARCH & TOOLBAR -->
-    <div class="bg-card rounded-lg shadow-sm mb-5 px-[18px] py-3.5 flex items-center gap-3 flex-wrap" id="toolbar" style="display:none;">
-      <div class="flex-1 min-w-[200px] relative">
+    <div class="bg-card rounded-lg shadow-sm mb-5 px-3 sm:px-[18px] py-3 sm:py-3.5 flex items-center gap-2 sm:gap-3 flex-wrap" id="toolbar" style="display:none;">
+      <div class="w-full sm:flex-1 sm:min-w-[200px] relative">
         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
         <input type="text" id="teacherSearch" placeholder="Search for a teacher..." oninput="onTeacherSearch()" autocomplete="off"
           class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
       </div>
-      <div class="flex gap-2 flex-shrink-0">
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+      <div class="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
           onclick="expandAll()">Expand All</button>
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary"
+        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all hover:bg-primary-light hover:text-primary hover:border-primary flex-1 sm:flex-none"
           onclick="collapseAll()">Collapse All</button>
       </div>
       <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
     </div>
 
-    <div id="loader" class="text-center mt-12 text-gray-500">Loading Inventory...</div>
+    <div id="loader" class="text-center mt-12 text-gray-500"><span class="spinner"></span>Loading Inventory...</div>
     <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
 
     <!-- DEVICE EDIT MODAL -->
     <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center">
-      <div class="bg-white p-6 rounded-lg w-[90%] max-w-[480px] max-h-[90vh] overflow-y-auto shadow-xl">
+      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl">
         <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
         <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
 
@@ -112,12 +150,12 @@
             <!-- Source toggle: Pool vs Custom -->
             <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
               <button type="button" id="tabPool"
-                class="flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white"
                 onclick="switchSerialSource('pool')">
                 From Pool
               </button>
               <button type="button" id="tabCustom"
-                class="flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100"
+                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100"
                 onclick="switchSerialSource('custom')">
                 Custom Serial
               </button>
@@ -169,9 +207,9 @@
             </div>
           </div>
 
-          <div class="flex justify-end gap-2.5 mt-6">
-            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 transition-colors" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-save-update bg-primary text-white px-5 py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 transition-colors" onclick="saveUpdate()">Save Update</button>
+          <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-6">
+            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 transition-colors w-full sm:w-auto" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 transition-colors w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
           </div>
         </form>
       </div>
@@ -182,12 +220,57 @@
       var globalPool      = [];
       var globalTeachers  = {};
       var selectedReplacement = '';
-      var serialSource = 'pool'; // 'pool' or 'custom'
+      var serialSource = 'pool';
       var mgmtPanelOpen = false;
+      var auditPanelOpen = false;
+      var auditLoaded = false;
+
+      // ── TOAST NOTIFICATIONS ──
+      function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+
+        var bgClass = 'bg-gray-700';
+        var iconText = '';
+        if (type === 'success') { bgClass = 'bg-good'; iconText = '\u2713 '; }
+        if (type === 'error')   { bgClass = 'bg-broken'; iconText = '\u2717 '; }
+        if (type === 'info')    { bgClass = 'bg-primary'; iconText = '\u2139 '; }
+
+        toast.className = bgClass + ' text-white text-sm px-4 py-3 rounded-lg shadow-lg pointer-events-auto';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(20px)';
+        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        toast.innerText = iconText + message;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(function() {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateX(0)';
+        }, 10);
+
+        // Auto-dismiss
+        var duration = type === 'error' ? 8000 : 5000;
+        setTimeout(function() {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(20px)';
+          setTimeout(function() {
+            if (toast.parentNode) container.removeChild(toast);
+          }, 300);
+        }, duration);
+      }
 
       // ── INITIAL LOAD ──
       window.onload = function() {
-        google.script.run.withSuccessHandler(renderApp).getAppData();
+        google.script.run
+          .withSuccessHandler(renderApp)
+          .withFailureHandler(function(err) {
+            var loader = document.getElementById('loader');
+            loader.innerHTML = '<span class="text-broken font-medium">Failed to load inventory.</span><br><span class="text-gray-400 text-sm">Please refresh the page. ' + escHtml(err.message || '') + '</span>';
+            showToast('Error loading data: ' + (err.message || err), 'error');
+          })
+          .getAppData();
       };
 
       // ── RENDER EVERYTHING ──
@@ -246,7 +329,7 @@
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light transition-colors" onclick="prefillTeacher(' +
+              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light transition-colors" onclick="prefillTeacher(' +
               JSON.stringify(name) + ',' + JSON.stringify(globalTeachers[name] || '') +
             ')">Edit</button></td>' +
             '</tr>';
@@ -272,6 +355,11 @@
           return;
         }
 
+        if (name.length > 100) {
+          setMgmtMsg('Teacher name is too long (max 100 characters).', 'error');
+          return;
+        }
+
         var btn = document.getElementById('btnSaveTeacher');
         btn.disabled = true;
         btn.innerText = 'Saving...';
@@ -284,6 +372,7 @@
 
             if (result.status === 'error') {
               setMgmtMsg(result.message, 'error');
+              showToast(result.message, 'error');
               return;
             }
 
@@ -296,11 +385,13 @@
 
             var action = result.status === 'added' ? 'Added' : 'Updated';
             setMgmtMsg(action + ': ' + result.teacher + (result.room ? ' \u2014 Room ' + result.room : ''), 'success');
+            showToast(action + ' teacher: ' + result.teacher, 'success');
           })
           .withFailureHandler(function(err) {
             btn.disabled = false;
             btn.innerText = 'Save Teacher';
             setMgmtMsg('Error: ' + err.message, 'error');
+            showToast('Failed to save teacher: ' + (err.message || err), 'error');
           })
           .saveTeacher({ teacherName: name, roomNumber: room });
       }
@@ -311,6 +402,96 @@
         el.className = 'text-sm py-1.5 min-h-[1.2em]';
         if (type === 'success') el.classList.add('text-good');
         if (type === 'error') el.classList.add('text-broken');
+      }
+
+      // ── AUDIT LOG PANEL ──
+      function toggleAuditPanel() {
+        auditPanelOpen = !auditPanelOpen;
+        var body = document.getElementById('auditPanelBody');
+        var icon = document.getElementById('auditCollapseIcon');
+        var header = document.getElementById('auditPanelHeader');
+
+        if (auditPanelOpen) {
+          body.style.maxHeight = '800px';
+          body.style.opacity = '1';
+          icon.style.transform = 'rotate(0deg)';
+          header.classList.add('border-b', 'border-gray-200');
+          if (!auditLoaded) loadAuditLog();
+        } else {
+          body.style.maxHeight = '0';
+          body.style.opacity = '0';
+          icon.style.transform = 'rotate(-90deg)';
+          header.classList.remove('border-b', 'border-gray-200');
+        }
+      }
+
+      function loadAuditLog() {
+        var wrap = document.getElementById('auditLogWrap');
+        var btn = document.getElementById('btnRefreshAudit');
+        wrap.innerHTML = '<div class="text-center py-4 text-gray-400"><span class="spinner"></span>Loading audit log...</div>';
+        btn.disabled = true;
+        btn.innerText = 'Loading...';
+
+        google.script.run
+          .withSuccessHandler(function(entries) {
+            btn.disabled = false;
+            btn.innerText = 'Refresh';
+            auditLoaded = true;
+            renderAuditLog(entries);
+          })
+          .withFailureHandler(function(err) {
+            btn.disabled = false;
+            btn.innerText = 'Refresh';
+            wrap.innerHTML = '<div class="text-center py-4 text-broken">Failed to load audit log: ' + escHtml(err.message || err) + '</div>';
+            showToast('Failed to load audit log.', 'error');
+          })
+          .getAuditLog(50);
+      }
+
+      function renderAuditLog(entries) {
+        var wrap = document.getElementById('auditLogWrap');
+        var countEl = document.getElementById('auditCount');
+
+        if (!entries || entries.length === 0) {
+          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No audit entries yet.</p>';
+          countEl.innerText = '0 entries';
+          return;
+        }
+
+        countEl.innerText = entries.length + ' recent entr' + (entries.length === 1 ? 'y' : 'ies');
+
+        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md">';
+        html += '<table class="w-full border-collapse text-sm">';
+        html += '<thead class="sticky top-0 bg-white"><tr>';
+        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">When</th>';
+        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">Who</th>';
+        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">Action</th>';
+        html += '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium hidden sm:table-cell">Target</th>';
+        html += '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium hidden md:table-cell">Details</th>';
+        html += '</tr></thead><tbody>';
+
+        entries.forEach(function(entry) {
+          var ts = entry.timestamp ? new Date(entry.timestamp) : null;
+          var timeStr = ts ? ts.toLocaleDateString() + ' ' + ts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '\u2014';
+          var userShort = (entry.user || '').split('@')[0];
+
+          // Action badge color
+          var actionClass = 'bg-gray-100 text-gray-600';
+          if (entry.action && entry.action.indexOf('Update') !== -1) actionClass = 'bg-primary-light text-primary';
+          if (entry.action && entry.action.indexOf('Added') !== -1) actionClass = 'bg-green-50 text-good';
+          if (entry.action && entry.action.indexOf('Deleted') !== -1) actionClass = 'bg-broken-light text-broken';
+
+          html += '<tr class="hover:bg-gray-50 transition-colors">';
+          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100 text-gray-500 whitespace-nowrap text-xs">' + escHtml(timeStr) + '</td>';
+          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100 text-gray-700 text-xs">' + escHtml(userShort) + '</td>';
+          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100"><span class="inline-block px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium ' + actionClass + '">' + escHtml(entry.action || '') + '</span></td>';
+          html += '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700 hidden sm:table-cell text-xs">' + escHtml(entry.target || '') + '</td>';
+          html += '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 hidden md:table-cell text-xs">' + escHtml(entry.details || '') + '</td>';
+          html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        wrap.innerHTML = html;
       }
 
       // ── TEACHER SEARCH ──
@@ -411,14 +592,14 @@
 
         teachers.forEach(function(teacher) {
           var card = document.createElement('div');
-          card.className = 'teacher-card bg-card rounded-lg shadow-sm p-4';
+          card.className = 'teacher-card bg-card rounded-lg shadow-sm p-3 sm:p-4';
           card.setAttribute('data-teacher', teacher);
           var room = globalTeachers[teacher] || '';
           card.setAttribute('data-room', room);
 
           // --- Collapsible Header ---
           var header = document.createElement('div');
-          header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2.5 pb-2 cursor-pointer select-none';
+          header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2 sm:mb-2.5 pb-2 cursor-pointer select-none';
 
           var info = document.createElement('div');
           info.className = 'flex-1';
@@ -459,7 +640,6 @@
               collapseCard(card);
             }
           };
-          // Hover effect for teacher name
           header.onmouseenter = function() { nameEl.classList.add('text-primary'); };
           header.onmouseleave = function() { nameEl.classList.remove('text-primary'); };
 
@@ -478,7 +658,7 @@
           sortedDevices.forEach(function(device) {
             var chip = document.createElement('div');
             var isBroken = device.status === 'Broken';
-            chip.className = 'py-2 px-1 rounded text-center cursor-pointer text-sm select-none transition-transform active:scale-95 ' +
+            chip.className = 'py-3 sm:py-2 px-1.5 sm:px-1 rounded text-center cursor-pointer text-sm select-none transition-transform active:scale-95 ' +
               (isBroken
                 ? 'bg-broken-light text-broken border border-broken'
                 : 'bg-primary-light text-primary');
@@ -507,21 +687,19 @@
         var customPanel = document.getElementById('customPanel');
 
         if (source === 'pool') {
-          tabPool.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabCustom.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
           poolPanel.classList.remove('hidden');
           customPanel.classList.add('hidden');
-          // Clear custom input, restore pool selection
           document.getElementById('customSerialInput').value = '';
           document.getElementById('customSerialValidation').innerText = '';
           document.getElementById('isCustomSerial').value = 'false';
           document.getElementById('replacementSerial').value = selectedReplacement;
         } else {
-          tabCustom.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
-          tabPool.className = 'flex-1 py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
+          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-primary text-white';
+          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-colors bg-gray-50 text-gray-600 hover:bg-gray-100';
           customPanel.classList.remove('hidden');
           poolPanel.classList.add('hidden');
-          // Clear pool selection, use custom input
           document.getElementById('isCustomSerial').value = 'true';
           var customVal = document.getElementById('customSerialInput').value.trim();
           document.getElementById('replacementSerial').value = customVal;
@@ -540,7 +718,6 @@
           return;
         }
 
-        // Check if serial exists in pool
         var inPool = globalPool.some(function(item) {
           return item.serial.toLowerCase() === val.toLowerCase();
         });
@@ -576,9 +753,7 @@
         serialSource = 'pool';
         document.getElementById('replacementSerial').value = '';
 
-        // Reset tabs to pool view
         switchSerialSource('pool');
-
         filterPool();
         toggleReplacement();
 
@@ -617,11 +792,10 @@
           filtered.forEach(function(item) {
             var row = document.createElement('div');
             var isSelected = selectedReplacement === item.serial;
-            row.className = 'flex items-center py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
+            row.className = 'flex items-center py-3 sm:py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
               (isSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
             row.setAttribute('data-serial', item.serial);
 
-            // Radio indicator
             var radio = document.createElement('div');
             radio.className = 'w-4 h-4 border-2 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ' +
               (isSelected ? 'border-primary' : 'border-gray-300');
@@ -631,7 +805,6 @@
               radio.appendChild(dot);
             }
 
-            // Details
             var details = document.createElement('div');
             details.className = 'flex-1 min-w-0';
             var serialDiv = document.createElement('div');
@@ -653,12 +826,11 @@
                 selectedReplacement = item.serial;
               }
               document.getElementById('replacementSerial').value = selectedReplacement;
-              // Update visual state
               var items = poolList.querySelectorAll('[data-serial]');
               items.forEach(function(el) {
                 var elSerial = el.getAttribute('data-serial');
                 var elIsSelected = elSerial === selectedReplacement;
-                el.className = 'flex items-center py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
+                el.className = 'flex items-center py-3 sm:py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
                   (elIsSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
 
                 var radioEl = el.querySelector('div:first-child');
@@ -700,6 +872,22 @@
       }
 
       function saveUpdate() {
+        // Frontend validation
+        var rowIndex = document.getElementById('rowIndex').value;
+        if (!rowIndex || isNaN(parseInt(rowIndex, 10))) {
+          showToast('Invalid device reference. Please close and reopen the modal.', 'error');
+          return;
+        }
+
+        var status = document.getElementById('statusSelect').value;
+        if (status === 'Broken' && serialSource === 'custom') {
+          var customCheck = document.getElementById('customSerialInput').value.trim();
+          if (customCheck && customCheck.length < 3) {
+            showToast('Serial number is too short (minimum 3 characters).', 'error');
+            return;
+          }
+        }
+
         var btn = document.querySelector('.btn-save-update');
         if (btn) {
           btn.innerText = 'Saving...';
@@ -723,16 +911,27 @@
             btn.innerText = 'Save Update';
             btn.disabled  = false;
           }
+          showToast('Device updated successfully.', 'success');
           document.getElementById('loader').style.display = 'block';
+          document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
+          document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
           document.getElementById('app').style.display    = 'none';
           document.getElementById('toolbar').style.display = 'none';
-          google.script.run.withSuccessHandler(renderApp).getAppData();
+          google.script.run
+            .withSuccessHandler(renderApp)
+            .withFailureHandler(function(err) {
+              document.getElementById('loader').style.display = 'none';
+              document.getElementById('app').style.display = 'flex';
+              document.getElementById('toolbar').style.display = 'flex';
+              showToast('Data saved but failed to refresh. Please reload the page.', 'error');
+            })
+            .getAppData();
         }).withFailureHandler(function(err) {
           if (btn) {
             btn.innerText = 'Save Update';
             btn.disabled  = false;
           }
-          alert('Error saving update: ' + (err.message || err));
+          showToast('Error saving update: ' + (err.message || err), 'error');
         }).submitUpdate(form);
       }
 
