@@ -2,6 +2,12 @@
 var ALLOWED_USERS = ['etruslow@waynesboro.k12.va.us', 'ahenshaw@waynesboro.k12.va.us'];
 var SHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 
+// --- CONSTANTS ---
+var SHEET_NAME_INVENTORY = "Inventory";
+var SHEET_NAME_REPLACEMENT_POOL = "Replacement_Pool";
+var SHEET_NAME_TEACHERS = "Teachers";
+var SHEET_NAME_AUDIT_LOG = "Audit_Log";
+
 // --- ERROR HANDLING HELPER ---
 function safeExecute(fn) {
   try {
@@ -49,10 +55,10 @@ function invalidateCache() {
 function logAudit(action, target, details) {
   try {
     var ss = SpreadsheetApp.openById(SHEET_ID);
-    var logSheet = ss.getSheetByName("Audit_Log");
+    var logSheet = ss.getSheetByName(SHEET_NAME_AUDIT_LOG);
 
     if (!logSheet) {
-      logSheet = ss.insertSheet("Audit_Log");
+      logSheet = ss.insertSheet(SHEET_NAME_AUDIT_LOG);
       logSheet.appendRow(["Timestamp", "User", "Action", "Target", "Details"]);
       logSheet.getRange(1, 1, 1, 5).setFontWeight("bold");
       logSheet.setColumnWidth(1, 160);
@@ -95,7 +101,7 @@ function getAppData() {
     var ss = SpreadsheetApp.openById(SHEET_ID);
 
     // 1. Get Inventory
-    var invSheet = ss.getSheetByName("Inventory");
+    var invSheet = ss.getSheetByName(SHEET_NAME_INVENTORY);
     if (!invSheet) throw new Error("Inventory sheet not found. Please check your spreadsheet.");
 
     var invData = [];
@@ -104,7 +110,7 @@ function getAppData() {
     }
 
     // 2. Get Replacement Pool
-    var poolSheet = ss.getSheetByName("Replacement_Pool");
+    var poolSheet = ss.getSheetByName(SHEET_NAME_REPLACEMENT_POOL);
     if (!poolSheet) throw new Error("Replacement_Pool sheet not found. Please check your spreadsheet.");
 
     var poolData = [];
@@ -119,7 +125,7 @@ function getAppData() {
 
     // 3. Get Chromecart-Room mappings (sheet may not exist yet)
     var teacherRooms = {};
-    var teacherSheet = ss.getSheetByName("Teachers");
+    var teacherSheet = ss.getSheetByName(SHEET_NAME_TEACHERS);
     if (teacherSheet && teacherSheet.getLastRow() > 1) {
       var teacherData = teacherSheet.getRange(2, 1, teacherSheet.getLastRow() - 1, 3).getValues();
       teacherData.forEach(function(row) {
@@ -163,9 +169,9 @@ function saveTeacher(formObject) {
   return safeExecute(function() {
     var ss = SpreadsheetApp.openById(SHEET_ID);
 
-    var teacherSheet = ss.getSheetByName("Teachers");
+    var teacherSheet = ss.getSheetByName(SHEET_NAME_TEACHERS);
     if (!teacherSheet) {
-      teacherSheet = ss.insertSheet("Teachers");
+      teacherSheet = ss.insertSheet(SHEET_NAME_TEACHERS);
       teacherSheet.appendRow(["Name", "Room", "Cart Number"]);
       teacherSheet.getRange(1, 1, 1, 3).setFontWeight("bold");
     }
@@ -207,7 +213,7 @@ function deleteTeacher(teacherName) {
     }
 
     var ss = SpreadsheetApp.openById(SHEET_ID);
-    var teacherSheet = ss.getSheetByName("Teachers");
+    var teacherSheet = ss.getSheetByName(SHEET_NAME_TEACHERS);
     if (!teacherSheet || teacherSheet.getLastRow() <= 1) return { status: "not_found" };
 
     var data = teacherSheet.getDataRange().getValues();
@@ -237,7 +243,7 @@ function updateChromecart(data) {
     if (!name) throw new Error("Cart name is required.");
 
     // 1. Update Teachers sheet
-    var teacherSheet = ss.getSheetByName("Teachers");
+    var teacherSheet = ss.getSheetByName(SHEET_NAME_TEACHERS);
     if (teacherSheet && teacherSheet.getLastRow() > 1) {
       var tData = teacherSheet.getDataRange().getValues();
       for (var i = 1; i < tData.length; i++) {
@@ -250,7 +256,7 @@ function updateChromecart(data) {
       }
     }
 
-    var invSheet = ss.getSheetByName("Inventory");
+    var invSheet = ss.getSheetByName(SHEET_NAME_INVENTORY);
     if (!invSheet) throw new Error("Inventory sheet not found.");
 
     // 2. If name changed, update all inventory rows
@@ -304,7 +310,7 @@ function updateChromecart(data) {
 function submitUpdate(formObject) {
   return safeExecute(function() {
     var ss = SpreadsheetApp.openById(SHEET_ID);
-    var invSheet = ss.getSheetByName("Inventory");
+    var invSheet = ss.getSheetByName(SHEET_NAME_INVENTORY);
     if (!invSheet) throw new Error("Inventory sheet not found.");
 
     var rowIndex = parseInt(formObject.rowIndex, 10);
@@ -329,7 +335,7 @@ function submitUpdate(formObject) {
 
       // 2. Only mark as Deployed in pool if serial came from the pool
       if (!isCustom) {
-        var poolSheet = ss.getSheetByName("Replacement_Pool");
+        var poolSheet = ss.getSheetByName(SHEET_NAME_REPLACEMENT_POOL);
         if (poolSheet && poolSheet.getLastRow() > 1) {
           var poolData = poolSheet.getDataRange().getValues();
           for (var i = 0; i < poolData.length; i++) {
@@ -360,7 +366,7 @@ function submitUpdate(formObject) {
 function getAuditLog(count) {
   return safeExecute(function() {
     var ss = SpreadsheetApp.openById(SHEET_ID);
-    var logSheet = ss.getSheetByName("Audit_Log");
+    var logSheet = ss.getSheetByName(SHEET_NAME_AUDIT_LOG);
 
     if (!logSheet || logSheet.getLastRow() <= 1) {
       return [];
