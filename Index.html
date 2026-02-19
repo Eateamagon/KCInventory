@@ -369,7 +369,11 @@
 
       function renderTeacherTable() {
         var wrap = document.getElementById('teacherTableWrap');
-        var keys = Object.keys(globalTeachers).sort(function(a, b) {
+        // Merge chromecarts from both Teachers sheet and Inventory sheet
+        var keySet = {};
+        Object.keys(globalTeachers).forEach(function(k) { keySet[k] = true; });
+        Object.keys(globalData).forEach(function(k) { keySet[k] = true; });
+        var keys = Object.keys(keySet).sort(function(a, b) {
           var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
           var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
           return numA !== numB ? numA - numB : a.localeCompare(b);
@@ -400,8 +404,8 @@
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 text-center">' + devCount + '</td>' +
             '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              '<button class="bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="openCartModal(' +
-              JSON.stringify(name) + ')">Edit</button></td>' +
+              "<button class=\"bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200\" onclick='openCartModal(" +
+              JSON.stringify(name).replace(/'/g, "&#39;") + ")'>" + "Edit</button></td>" +
             '</tr>';
         });
 
