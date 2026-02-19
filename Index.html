@@ -17,6 +17,12 @@
 
   <!-- DARK MODE TOGGLE -->
   <div class="flex justify-end mb-3">
+    <button id="viewModeToggle" onclick="toggleViewMode()"
+      class="bg-card border border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer font-sans font-medium text-gray-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-200 flex items-center gap-2"
+      title="Switch View">
+      <span id="viewModeIcon" class="text-base leading-none">&#128338;</span>
+      <span id="viewModeLabel">Grid View</span>
+    </button>
     <button id="darkModeToggle" onclick="toggleDarkMode()"
       class="bg-card border border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer font-sans font-medium text-gray-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-200 flex items-center gap-2"
       title="Toggle dark mode">

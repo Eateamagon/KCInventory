@@ -1,28 +1,28 @@
 <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: '#1a73e8',
-                    'primary-light': '#e8f0fe',
-                    'primary-hover': '#d2e3fc',
-                    'primary-dark': '#1558b0',
-                    broken: '#d93025',
-                    'broken-light': '#fce8e6',
-                    good: '#1e8e3e',
-                    surface: '#f1f3f4',
-                    card: '#ffffff',
-                },
-                fontFamily: {
-                    sans: ['Roboto', 'sans-serif'],
-                    mono: ['Roboto Mono', 'monospace'],
-                },
-            },
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#1a73e8',
+          'primary-light': '#e8f0fe',
+          'primary-hover': '#d2e3fc',
+          'primary-dark': '#1558b0',
+          broken: '#d93025',
+          'broken-light': '#fce8e6',
+          good: '#1e8e3e',
+          surface: '#f1f3f4',
+          card: '#ffffff',
         },
-    }
+        fontFamily: {
+          sans: ['Roboto', 'sans-serif'],
+          mono: ['Roboto Mono', 'monospace'],
+        },
+      },
+    },
+  }
 </script>
 <style type="text/tailwindcss">
-    .collapse-animate {
+  .collapse-animate {
     transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -142,9 +142,13 @@
     border-color: #3d3d50;
     border-top-color: #1a73e8;
   }
-  body.dark-mode #darkModeToggle {
+  body.dark-mode #darkModeToggle,
+  body.dark-mode #viewModeToggle {
     background-color: #262636 !important;
     border-color: #3d3d50 !important;
+  }
+  body.dark-mode .text-primary-dark {
+    color: #8ab4f8 !important; /* Lighter blue for dark mode/backgrounds */
   }
   body.dark-mode .bg-broken-light {
     background-color: #3b1c1c !important;
@@ -166,5 +170,41 @@
   }
   body.dark-mode .bg-gray-700 {
     background-color: #1e1e2e !important;
+  }
+  
+  /* GRID VIEW DARK MODE */
+  body.dark-mode .sticky.z-20 { /* Corner */
+    background-color: #262636 !important;
+    border-color: #3d3d50 !important;
+    color: #e2e8f0 !important;
+  }
+  body.dark-mode thead th { /* Headers */
+    background-color: #262636 !important;
+    border-color: #3d3d50 !important;
+    color: #e2e8f0 !important;
+  }
+  body.dark-mode tbody td.sticky { /* Slot column */
+    background-color: #262636 !important;
+    border-color: #3d3d50 !important;
+    color: #94a3b8 !important;
+  }
+  body.dark-mode tbody td { /* Cells */
+    background-color: #1e1e2e !important;
+    border-color: #333346 !important;
+  }
+  body.dark-mode tbody td:hover {
+    background-color: #2d2d3d !important;
+  }
+  body.dark-mode .text-primary-dark {
+     color: #8ab4f8 !important;
+  }
+  body.dark-mode .text-gray-200 { /* Empty dashes */
+     color: #3d3d50 !important;
+  }
+  body.dark-mode td > div.text-gray-700 {
+    color: #cbd5e1 !important;
+  }
+  body.dark-mode td > div.text-gray-700 .text-gray-400 {
+     color: #94a3b8 !important;
   }
 </style>

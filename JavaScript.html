@@ -11,6 +11,7 @@
     var cartModalDevices = [];
     var cartDeletedRows = [];
     var darkMode = false;
+    var viewMode = 'cards'; // 'cards' or 'grid'
 
     // ── DARK MODE ──
     function toggleDarkMode() {
@@ -38,6 +39,15 @@
                 var label = document.getElementById('darkModeLabel');
                 if (icon) icon.innerHTML = '&#9788;';
                 if (label) label.innerText = 'Light Mode';
+            }
+            // Restore View Mode
+            var savedView = localStorage.getItem('kcInventoryViewMode');
+            if (savedView === 'grid') {
+                viewMode = 'grid';
+                var vIcon = document.getElementById('viewModeIcon');
+                var vLabel = document.getElementById('viewModeLabel');
+                if (vIcon) vIcon.innerHTML = '&#9638;';
+                if (vLabel) vLabel.innerText = 'Card View';
             }
         } catch (e) { }
     })();
@@ -99,14 +109,39 @@
             .getAppData();
     };
 
+    // ── VIEW MODE TOGGLE ──
+    function toggleViewMode() {
+        viewMode = viewMode === 'cards' ? 'grid' : 'cards';
+        var icon = document.getElementById('viewModeIcon');
+        var label = document.getElementById('viewModeLabel');
+
+        if (viewMode === 'grid') {
+            icon.innerHTML = '&#9638;';
+            label.innerText = 'Card View';
+            document.getElementById('layoutSelect').style.display = 'none'; // Hide layout columns in grid mode
+        } else {
+            icon.innerHTML = '&#128338;';
+            label.innerText = 'Grid View';
+            document.getElementById('layoutSelect').style.display = '';
+        }
+
+        try { localStorage.setItem('kcInventoryViewMode', viewMode); } catch (e) { }
+        renderApp({ inventory: globalData, replacements: globalPool, teacherRooms: globalTeachers }); // Re-render
+    }
+
     // ── RENDER EVERYTHING ──
     function renderApp(data) {
-        globalData = data.inventory;
-        globalPool = data.replacements;
-        globalTeachers = data.teacherRooms || {};
+        globalData = data.inventory || globalData;
+        globalPool = data.replacements || globalPool;
+        globalTeachers = data.teacherRooms || globalTeachers;
 
         renderTeacherTable();
-        renderCards();
+
+        if (viewMode === 'grid') {
+            renderGridView();
+        } else {
+            renderCards();
+        }
     }
 
     // ── CHROMECART MANAGEMENT PANEL ──
@@ -471,7 +506,17 @@
             var name = card.getAttribute('data-teacher').toLowerCase();
             var room = (card.getAttribute('data-room') || '').toLowerCase();
             var cartNum = (card.getAttribute('data-cart-number') || '').toLowerCase();
-            if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1 || cartNum.indexOf(query) !== -1) {
+
+            // Check specific serial numbers within this cart
+            var hasSerial = false;
+            var teacherName = card.getAttribute('data-teacher'); // Original case
+            if (globalData[teacherName]) {
+                hasSerial = globalData[teacherName].some(function (d) {
+                    return (d.serial || '').toLowerCase().indexOf(query) !== -1;
+                });
+            }
+
+            if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1 || cartNum.indexOf(query) !== -1 || hasSerial) {
                 card.style.display = '';
                 shown++;
             } else {
@@ -503,6 +548,116 @@
         } else {
             el.innerText = shown + ' of ' + total + ' chromecart' + (total !== 1 ? 's' : '');
         }
+    }
+
+    // ── GRID VIEW RENDERER ──
+    function renderGridView() {
+        var app = document.getElementById('app');
+        app.innerHTML = '';
+        app.className = 'w-full overflow-x-auto bg-card rounded-lg shadow-sm border border-gray-200';
+        app.style.display = 'block';
+        app.style.gridTemplateColumns = '';
+        app.style.maxWidth = '100%';
+
+        var teachers = Object.keys(globalData).sort(function (a, b) {
+            var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
+            var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
+            return numA !== numB ? numA - numB : a.localeCompare(b);
+        });
+
+        // Filter based on search if query exists
+        var query = document.getElementById('teacherSearch').value.toLowerCase().trim();
+        if (query) {
+            teachers = teachers.filter(function (t) {
+                var info = globalTeachers[t] || {};
+                var name = t.toLowerCase();
+                var room = (info.room || '').toLowerCase();
+                var cartNum = (info.cartNumber || '').toString().toLowerCase();
+                var hasSerial = globalData[t].some(function (d) { return (d.serial || '').toLowerCase().indexOf(query) !== -1; });
+                return name.indexOf(query) !== -1 || room.indexOf(query) !== -1 || cartNum.indexOf(query) !== -1 || hasSerial;
+            });
+        }
+        updateTeacherCount(teachers.length, Object.keys(globalData).length);
+
+        if (teachers.length === 0) {
+            app.innerHTML = '<div class="p-8 text-center text-gray-500">No carts found.</div>';
+            return;
+        }
+
+        // Determine max slots
+        var maxSlots = 0;
+        teachers.forEach(function (t) {
+            var devs = globalData[t] || [];
+            devs.forEach(function (d) {
+                var s = parseInt(d.slot.replace(/\D/g, ''), 10) || 0;
+                if (s > maxSlots) maxSlots = s;
+            });
+        });
+        if (maxSlots === 0) maxSlots = 30; // Default minimum
+
+        // Build Table
+        var table = document.createElement('table');
+        table.className = 'w-full border-collapse text-sm';
+
+        // Header Row
+        var thead = document.createElement('thead');
+        var trHead = document.createElement('tr');
+        // Sticky First Column (Slot #)
+        var thCorner = document.createElement('th');
+        thCorner.className = 'sticky left-0 top-0 z-20 bg-gray-100 border-b border-r border-gray-300 p-2 min-w-[50px] text-center font-bold text-gray-600';
+        thCorner.innerText = '#';
+        trHead.appendChild(thCorner);
+
+        teachers.forEach(function (t) {
+            var th = document.createElement('th');
+            th.className = 'sticky top-0 z-10 bg-gray-50 border-b border-gray-300 p-2 min-w-[140px] text-left font-medium text-gray-700 whitespace-nowrap';
+            var info = globalTeachers[t] || {};
+            th.innerHTML = '<div class="font-bold">' + escHtml(info.cartNumber ? '#' + info.cartNumber : '') + '</div>' +
+                '<div class="text-xs text-primary-dark">' + escHtml(t) + '</div>';
+            trHead.appendChild(th);
+        });
+        thead.appendChild(trHead);
+        table.appendChild(thead);
+
+        // Body
+        var tbody = document.createElement('tbody');
+        for (var i = 1; i <= maxSlots; i++) {
+            var tr = document.createElement('tr');
+
+            // Slot Number Cell
+            var tdSlot = document.createElement('td');
+            tdSlot.className = 'sticky left-0 z-10 bg-gray-50 border-r border-b border-gray-200 p-1 text-center font-mono text-gray-500 text-xs font-bold';
+            tdSlot.innerText = i;
+            tr.appendChild(tdSlot);
+
+            teachers.forEach(function (t) {
+                var td = document.createElement('td');
+                td.className = 'border-b border-gray-200 p-1 bg-white hover:bg-gray-50 transition-colors relative group border-r border-dashed border-gray-200';
+
+                // Find device in this slot
+                var dev = (globalData[t] || []).find(function (d) {
+                    var s = parseInt(d.slot.replace(/\D/g, ''), 10);
+                    return s === i;
+                });
+
+                if (dev) {
+                    var isBroken = dev.status === 'Broken';
+                    var div = document.createElement('div');
+                    div.className = 'w-full h-full p-1.5 rounded text-xs cursor-pointer ' +
+                        (isBroken ? 'bg-broken-light text-broken' : 'text-gray-700');
+                    div.innerHTML = '<div class="font-mono font-bold truncate" title="' + escHtml(dev.serial) + '">' + escHtml(dev.serial) + '</div>' +
+                        '<div class="text-[10px] text-gray-400 truncate">' + escHtml(dev.model) + '</div>';
+                    div.onclick = function () { openModal(dev); };
+                    td.appendChild(div);
+                } else {
+                    td.innerHTML = '<div class="text-gray-200 text-center text-xs">-</div>';
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        app.appendChild(table);
     }
 
     // ── COLLAPSE / EXPAND ALL ──

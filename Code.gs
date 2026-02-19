@@ -65,7 +65,12 @@ function logAudit(action, target, details) {
       logSheet.setColumnWidth(5, 400);
     }
 
-    var user = Session.getActiveUser().getEmail() || 'unknown';
+    var user = Session.getActiveUser().getEmail() ||
+               Session.getEffectiveUser().getEmail() ||
+               'unknown';
+    if (user === 'unknown') {
+        Logger.log('Warning: User identity not captured in audit log.');
+    }
     logSheet.appendRow([new Date(), user, action, target, details]);
   } catch (e) {
     // Audit logging should never break the main operation
