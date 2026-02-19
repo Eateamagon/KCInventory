@@ -121,9 +121,9 @@ function getAppData() {
     var teacherRooms = {};
     var teacherSheet = ss.getSheetByName("Teachers");
     if (teacherSheet && teacherSheet.getLastRow() > 1) {
-      var teacherData = teacherSheet.getRange(2, 1, teacherSheet.getLastRow() - 1, 2).getValues();
+      var teacherData = teacherSheet.getRange(2, 1, teacherSheet.getLastRow() - 1, 3).getValues();
       teacherData.forEach(function(row) {
-        if (row[0]) teacherRooms[row[0]] = row[1] || '';
+        if (row[0]) teacherRooms[row[0]] = { room: row[1] || '', cartNumber: String(row[2] || '') };
       });
     }
 
@@ -166,12 +166,13 @@ function saveTeacher(formObject) {
     var teacherSheet = ss.getSheetByName("Teachers");
     if (!teacherSheet) {
       teacherSheet = ss.insertSheet("Teachers");
-      teacherSheet.appendRow(["Name", "Room"]);
-      teacherSheet.getRange(1, 1, 1, 2).setFontWeight("bold");
+      teacherSheet.appendRow(["Name", "Room", "Cart Number"]);
+      teacherSheet.getRange(1, 1, 1, 3).setFontWeight("bold");
     }
 
     var name = (formObject.teacherName || '').toString().trim();
     var room = (formObject.roomNumber || '').toString().trim();
+    var cartNumber = (formObject.cartNumber || '').toString().trim();
 
     if (!name) return { status: "error", message: "Cart name is required." };
     if (name.length > 100) return { status: "error", message: "Cart name is too long." };
@@ -183,17 +184,18 @@ function saveTeacher(formObject) {
       if (data[i][0].toString().toLowerCase() === name.toLowerCase()) {
         teacherSheet.getRange(i + 1, 1).setValue(name);
         teacherSheet.getRange(i + 1, 2).setValue(room);
-        logAudit('Chromecart Updated', name, 'Room set to ' + (room || '(none)'));
+        teacherSheet.getRange(i + 1, 3).setValue(cartNumber);
+        logAudit('Chromecart Updated', name, 'Room: ' + (room || '(none)') + ', Cart #' + (cartNumber || '(none)'));
         invalidateCache();
-        return { status: "updated", teacher: name, room: room };
+        return { status: "updated", teacher: name, room: room, cartNumber: cartNumber };
       }
     }
 
     // Otherwise append a new row
-    teacherSheet.appendRow([name, room]);
-    logAudit('Chromecart Added', name, 'Room: ' + (room || '(none)'));
+    teacherSheet.appendRow([name, room, cartNumber]);
+    logAudit('Chromecart Added', name, 'Room: ' + (room || '(none)') + ', Cart #' + (cartNumber || '(none)'));
     invalidateCache();
-    return { status: "added", teacher: name, room: room };
+    return { status: "added", teacher: name, room: room, cartNumber: cartNumber };
   });
 }
 
@@ -218,6 +220,83 @@ function deleteTeacher(teacherName) {
       }
     }
     return { status: "not_found" };
+  });
+}
+
+// --- API: UPDATE CHROMECART (full edit with devices) ---
+function updateChromecart(data) {
+  return safeExecute(function() {
+    var ss = SpreadsheetApp.openById(SHEET_ID);
+    var originalName = (data.originalName || '').toString().trim();
+    var name = (data.name || '').toString().trim();
+    var room = (data.room || '').toString().trim();
+    var cartNumber = (data.cartNumber || '').toString().trim();
+    var devices = data.devices || [];
+    var deletedRows = data.deletedRows || [];
+
+    if (!name) throw new Error("Cart name is required.");
+
+    // 1. Update Teachers sheet
+    var teacherSheet = ss.getSheetByName("Teachers");
+    if (teacherSheet && teacherSheet.getLastRow() > 1) {
+      var tData = teacherSheet.getDataRange().getValues();
+      for (var i = 1; i < tData.length; i++) {
+        if (tData[i][0].toString().toLowerCase() === originalName.toLowerCase()) {
+          teacherSheet.getRange(i + 1, 1).setValue(name);
+          teacherSheet.getRange(i + 1, 2).setValue(room);
+          teacherSheet.getRange(i + 1, 3).setValue(cartNumber);
+          break;
+        }
+      }
+    }
+
+    var invSheet = ss.getSheetByName("Inventory");
+    if (!invSheet) throw new Error("Inventory sheet not found.");
+
+    // 2. If name changed, update all inventory rows
+    if (originalName.toLowerCase() !== name.toLowerCase() && invSheet.getLastRow() > 1) {
+      var invData = invSheet.getRange(2, 1, invSheet.getLastRow() - 1, 1).getValues();
+      for (var j = 0; j < invData.length; j++) {
+        if (invData[j][0].toString().toLowerCase() === originalName.toLowerCase()) {
+          invSheet.getRange(j + 2, 1).setValue(name);
+        }
+      }
+    }
+
+    // 3. Delete removed device rows (highest index first to preserve positions)
+    var sortedDeleted = deletedRows.slice().sort(function(a, b) { return b - a; });
+    for (var d = 0; d < sortedDeleted.length; d++) {
+      var rowIdx = parseInt(sortedDeleted[d], 10);
+      if (!isNaN(rowIdx) && rowIdx >= 2 && rowIdx <= invSheet.getLastRow()) {
+        invSheet.deleteRow(rowIdx);
+      }
+    }
+
+    // 4. Update existing / add new device rows
+    for (var k = 0; k < devices.length; k++) {
+      var dev = devices[k];
+      var slot = (dev.slot || '').toString().trim();
+      var serial = (dev.serial || '').toString().trim();
+      var model = (dev.model || '').toString().trim();
+
+      if (dev.rowIndex) {
+        // Update existing row
+        var ri = parseInt(dev.rowIndex, 10);
+        if (!isNaN(ri) && ri >= 2) {
+          invSheet.getRange(ri, 2).setValue(model);
+          invSheet.getRange(ri, 3).setValue(slot);
+          invSheet.getRange(ri, 4).setValue(serial);
+          invSheet.getRange(ri, 7).setValue(new Date());
+        }
+      } else if (slot || serial) {
+        // Add new device row
+        invSheet.appendRow([name, model, slot, serial, "Working", "", new Date()]);
+      }
+    }
+
+    logAudit('Chromecart Updated', name, 'Full edit: Room ' + (room || '(none)') + ', Cart #' + (cartNumber || '(none)') + ', ' + devices.length + ' devices, ' + deletedRows.length + ' removed');
+    invalidateCache();
+    return { status: "success" };
   });
 }
 
