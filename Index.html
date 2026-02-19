@@ -1,1349 +1,260 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#1a73e8',
-              'primary-light': '#e8f0fe',
-              'primary-hover': '#d2e3fc',
-              broken: '#d93025',
-              'broken-light': '#fce8e6',
-              good: '#1e8e3e',
-              surface: '#f1f3f4',
-              card: '#ffffff',
-            },
-            fontFamily: {
-              sans: ['Roboto', 'sans-serif'],
-              mono: ['Roboto Mono', 'monospace'],
-            },
-          },
-        },
-      }
-    </script>
-    <style type="text/tailwindcss">
-      .collapse-animate {
-        transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
-      }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .spinner {
-        width: 18px; height: 18px;
-        border: 2px solid #e5e7eb;
-        border-top-color: #1a73e8;
-        border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 6px;
-      }
-      /* Mobile scrolling optimizations */
-      .scroll-touch {
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-      }
-      body {
-        touch-action: manipulation;
-      }
-      #app {
-        touch-action: pan-y;
-      }
-      .teacher-card {
-        content-visibility: auto;
-        contain-intrinsic-size: 0 200px;
-      }
-      @media (max-width: 640px) {
-        #app { grid-template-columns: 1fr !important; }
-      }
-      /* ── DARK MODE ── */
-      body.dark-mode {
-        background-color: #121218 !important;
-        color: #e2e8f0 !important;
-      }
-      body.dark-mode .bg-card,
-      body.dark-mode .bg-white {
-        background-color: #1e1e2e !important;
-      }
-      body.dark-mode .bg-surface {
-        background-color: #121218 !important;
-      }
-      body.dark-mode .bg-gray-50 {
-        background-color: #262636 !important;
-      }
-      body.dark-mode .text-gray-800 {
-        color: #e2e8f0 !important;
-      }
-      body.dark-mode .text-gray-700 {
-        color: #cbd5e1 !important;
-      }
-      body.dark-mode .text-gray-600 {
-        color: #94a3b8 !important;
-      }
-      body.dark-mode .text-gray-500 {
-        color: #94a3b8 !important;
-      }
-      body.dark-mode .text-gray-400 {
-        color: #64748b !important;
-      }
-      body.dark-mode .border-gray-100 {
-        border-color: #2d2d3d !important;
-      }
-      body.dark-mode .border-gray-200 {
-        border-color: #333346 !important;
-      }
-      body.dark-mode .border-gray-300 {
-        border-color: #3d3d50 !important;
-      }
-      body.dark-mode .shadow-sm {
-        box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
-      }
-      body.dark-mode .shadow-lg {
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
-      }
-      body.dark-mode .shadow-xl {
-        box-shadow: 0 8px 25px rgba(0,0,0,0.6) !important;
-      }
-      body.dark-mode input,
-      body.dark-mode select,
-      body.dark-mode textarea {
-        background-color: #262636 !important;
-        color: #e2e8f0 !important;
-        border-color: #3d3d50 !important;
-      }
-      body.dark-mode input:focus,
-      body.dark-mode select:focus {
-        border-color: #1a73e8 !important;
-        background-color: #1e1e2e !important;
-      }
-      body.dark-mode input::placeholder {
-        color: #64748b !important;
-      }
-      body.dark-mode .hover\:bg-gray-50:hover {
-        background-color: #262636 !important;
-      }
-      body.dark-mode .hover\:bg-gray-100:hover {
-        background-color: #2d2d3d !important;
-      }
-      body.dark-mode .bg-primary-light {
-        background-color: #1a3a5c !important;
-      }
-      body.dark-mode .hover\:bg-primary-light:hover {
-        background-color: #1a3a5c !important;
-      }
-      body.dark-mode .bg-black\/50 {
-        background-color: rgba(0,0,0,0.7) !important;
-      }
-      body.dark-mode .bg-gray-200 {
-        background-color: #333346 !important;
-      }
-      body.dark-mode .text-white {
-        color: #ffffff !important;
-      }
-      body.dark-mode .spinner {
-        border-color: #3d3d50;
-        border-top-color: #1a73e8;
-      }
-      body.dark-mode #darkModeToggle {
-        background-color: #262636 !important;
-        border-color: #3d3d50 !important;
-      }
-      body.dark-mode .bg-broken-light {
-        background-color: #3b1c1c !important;
-      }
-      body.dark-mode .bg-amber-50 {
-        background-color: #352a10 !important;
-      }
-      body.dark-mode .border-amber-200 {
-        border-color: #5c4a1e !important;
-      }
-      body.dark-mode .text-amber-700 {
-        color: #d4a843 !important;
-      }
-      body.dark-mode .bg-gray-600 {
-        background-color: #3d3d50 !important;
-      }
-      body.dark-mode .hover\:bg-gray-300:hover {
-        background-color: #3d3d50 !important;
-      }
-      body.dark-mode .bg-gray-700 {
-        background-color: #1e1e2e !important;
-      }
-    </style>
-  </head>
-  <body class="bg-surface font-sans m-0 p-3 sm:p-5">
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toastContainer" class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:max-w-[380px]"></div>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <?!= include('Styles'); ?>
+</head>
 
-    <!-- DARK MODE TOGGLE -->
-    <div class="flex justify-end mb-3">
-      <button id="darkModeToggle" onclick="toggleDarkMode()"
-        class="bg-card border border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer font-sans font-medium text-gray-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-200 flex items-center gap-2"
-        title="Toggle dark mode">
-        <span id="darkModeIcon" class="text-base leading-none">&#9789;</span>
-        <span id="darkModeLabel">Dark Mode</span>
-      </button>
-    </div>
+<body class="bg-surface font-sans m-0 p-3 sm:p-5">
 
-    <!-- CHROMECART MANAGEMENT PANEL -->
-    <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
-      <div
-        class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
-        onclick="toggleMgmtPanel()"
-        id="mgmtPanelHeader"
-      >
-        <span>Chromecart Management</span>
-        <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
-      </div>
-      <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="mgmtPanelBody">
-        <div class="flex justify-between items-center pt-3 sm:pt-[18px] mb-3">
-          <span class="text-sm text-gray-400" id="mgmtMsg"></span>
-          <button class="bg-primary text-white px-4 py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            onclick="openCartModal(null)">+ Add Chromecart</button>
-        </div>
-        <div id="teacherTableWrap" class="pb-[18px] overflow-y-auto max-h-[60vh] scroll-touch"></div>
-      </div>
-    </div>
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer"
+    class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:max-w-[380px]">
+  </div>
 
-    <!-- AUDIT LOG FLOATING BUTTON -->
-    <button id="auditFab" class="fixed bottom-4 right-4 z-50 bg-gray-600 text-white rounded-full w-11 h-11 shadow-lg flex items-center justify-center hover:bg-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-none" onclick="toggleAuditModal()" title="Audit Log">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+  <!-- DARK MODE TOGGLE -->
+  <div class="flex justify-end mb-3">
+    <button id="darkModeToggle" onclick="toggleDarkMode()"
+      class="bg-card border border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer font-sans font-medium text-gray-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-200 flex items-center gap-2"
+      title="Toggle dark mode">
+      <span id="darkModeIcon" class="text-base leading-none">&#9789;</span>
+      <span id="darkModeLabel">Dark Mode</span>
     </button>
+  </div>
 
-    <!-- AUDIT LOG MODAL -->
-    <div id="auditModal" class="hidden fixed inset-0 bg-black/50 z-[150] justify-center items-center overscroll-contain">
-      <div class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[640px] max-h-[80vh] overflow-hidden shadow-xl flex flex-col">
-        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
-          <div class="flex items-center gap-3">
-            <h3 class="text-lg font-medium text-gray-800 m-0">Audit Log</h3>
-            <span class="text-sm text-gray-400" id="auditCount"></span>
+  <!-- CHROMECART MANAGEMENT PANEL -->
+  <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
+    <div
+      class="flex justify-between items-center px-3 sm:px-[18px] py-4 sm:py-3.5 cursor-pointer select-none border-b border-gray-200 font-medium text-gray-700 hover:text-primary transition-colors"
+      onclick="toggleMgmtPanel()" id="mgmtPanelHeader">
+      <span>Chromecart Management</span>
+      <span class="text-xs text-gray-400 transition-transform duration-300" id="mgmtCollapseIcon">&#9660;</span>
+    </div>
+    <div class="collapse-animate overflow-hidden max-h-0 opacity-0 px-3 sm:px-[18px] py-0" id="mgmtPanelBody">
+      <div class="flex justify-between items-center pt-3 sm:pt-[18px] mb-3">
+        <span class="text-sm text-gray-400" id="mgmtMsg"></span>
+        <button
+          class="bg-primary text-white px-4 py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+          onclick="openCartModal(null)">+ Add Chromecart</button>
+      </div>
+      <div id="teacherTableWrap" class="pb-[18px] overflow-y-auto max-h-[60vh] scroll-touch"></div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG FLOATING BUTTON -->
+  <button id="auditFab"
+    class="fixed bottom-4 right-4 z-50 bg-gray-600 text-white rounded-full w-11 h-11 shadow-lg flex items-center justify-center hover:bg-gray-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-none"
+    onclick="toggleAuditModal()" title="Audit Log">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+    </svg>
+  </button>
+
+  <!-- AUDIT LOG MODAL -->
+  <div id="auditModal" class="hidden fixed inset-0 bg-black/50 z-[150] justify-center items-center overscroll-contain">
+    <div
+      class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[640px] max-h-[80vh] overflow-hidden shadow-xl flex flex-col">
+      <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <h3 class="text-lg font-medium text-gray-800 m-0">Audit Log</h3>
+          <span class="text-sm text-gray-400" id="auditCount"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0"
+            onclick="loadAuditLog()" id="btnRefreshAudit">Refresh</button>
+          <button onclick="closeAuditModal()"
+            class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
+        </div>
+      </div>
+      <div class="overflow-y-auto flex-1 scroll-touch p-4" id="auditLogWrap">
+        <p class="text-gray-400 text-sm text-center py-3">Loading audit entries...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH & TOOLBAR -->
+  <div
+    class="bg-card rounded-lg shadow-sm mb-5 px-3 sm:px-[18px] py-3 sm:py-3.5 flex items-center gap-2 sm:gap-3 flex-wrap"
+    id="toolbar" style="display:none;">
+    <div class="w-full sm:flex-1 sm:min-w-[200px] relative">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
+      <input type="text" id="teacherSearch" placeholder="Search for a chromecart..." oninput="onTeacherSearch()"
+        autocomplete="off"
+        class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
+    </div>
+    <div class="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+      <button
+        class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
+        onclick="expandAll()">Expand All</button>
+      <button
+        class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
+        onclick="collapseAll()">Collapse All</button>
+    </div>
+    <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
+    <select id="layoutSelect" onchange="changeLayout()"
+      class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0 hidden sm:block">
+      <option value="1">1 Column</option>
+      <option value="2">2 Columns</option>
+      <option value="3">3 Columns</option>
+    </select>
+  </div>
+
+  <div id="loader" class="text-center mt-12 text-gray-500"><span class="spinner"></span>Loading Inventory...</div>
+  <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
+
+  <!-- DEVICE EDIT MODAL -->
+  <div id="modalOverlay"
+    class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center overscroll-contain">
+    <div
+      class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl scroll-touch">
+      <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
+      <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
+
+      <form id="updateForm">
+        <input type="hidden" id="rowIndex" name="rowIndex">
+        <input type="hidden" id="replacementSerial" name="replacementSerial" value="">
+        <input type="hidden" id="isCustomSerial" name="isCustomSerial" value="false">
+
+        <label class="block mt-4 text-sm text-gray-500 font-medium">Status</label>
+        <select id="statusSelect" name="status" onchange="toggleReplacement()"
+          class="w-full p-2.5 mt-1 border border-gray-300 rounded box-border font-sans text-sm">
+          <option value="Working">Working</option>
+          <option value="Broken">Broken / Needs Repair</option>
+        </select>
+
+        <div id="replacementContainer" style="display:none;">
+          <label class="block mt-4 text-sm text-gray-500 font-medium">Assign Replacement</label>
+
+          <!-- Source toggle: Pool vs Custom -->
+          <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
+            <button type="button" id="tabPool"
+              class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white"
+              onclick="switchSerialSource('pool')">
+              From Pool
+            </button>
+            <button type="button" id="tabCustom"
+              class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+              onclick="switchSerialSource('custom')">
+              Custom Serial
+            </button>
           </div>
-          <div class="flex items-center gap-2">
-            <button
-              class="bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0"
-              onclick="loadAuditLog()"
-              id="btnRefreshAudit"
-            >Refresh</button>
-            <button onclick="closeAuditModal()" class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
+
+          <!-- Pool selection panel -->
+          <div id="poolPanel">
+            <div class="relative mt-2">
+              <span
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
+              <input type="text" id="poolSearch" placeholder="Search by serial or model..." oninput="filterPool()"
+                autocomplete="off"
+                class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-sm box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white m-0">
+            </div>
+
+            <div class="flex gap-2 mt-1.5 items-center justify-between">
+              <span class="text-xs text-gray-400" id="poolCount"></span>
+              <select
+                class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0"
+                id="poolSort" onchange="filterPool()">
+                <option value="serial-asc">Serial A-Z</option>
+                <option value="serial-desc">Serial Z-A</option>
+                <option value="model-asc">Model A-Z</option>
+                <option value="model-desc">Model Z-A</option>
+              </select>
+            </div>
+
+            <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50 scroll-touch"
+              id="poolList"></div>
+          </div>
+
+          <!-- Custom serial input panel (hidden by default) -->
+          <div id="customPanel" class="hidden">
+            <div class="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p class="text-xs text-amber-700 mb-3 mt-0">Enter a serial number for a device not in the replacement
+                pool. This serial will not be tracked in the pool inventory.</p>
+              <label class="block text-sm text-gray-600 font-medium !mt-0 mb-1" for="customSerialInput">Serial
+                Number</label>
+              <input type="text" id="customSerialInput" placeholder="Enter serial number..." autocomplete="off"
+                oninput="onCustomSerialInput()"
+                class="w-full py-2.5 px-3 border border-gray-300 rounded-md font-mono text-sm box-border bg-white transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30">
+              <div id="customSerialValidation" class="text-xs mt-1.5 min-h-[1em]"></div>
+            </div>
           </div>
         </div>
-        <div class="overflow-y-auto flex-1 scroll-touch p-4" id="auditLogWrap">
-          <p class="text-gray-400 text-sm text-center py-3">Loading audit entries...</p>
+
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-6">
+          <button type="button"
+            class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200 w-full sm:w-auto"
+            onclick="closeModal()">Cancel</button>
+          <button type="button"
+            class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 w-full sm:w-auto"
+            onclick="saveUpdate()">Save Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CHROMECART EDIT MODAL -->
+  <div id="cartModalOverlay"
+    class="hidden fixed inset-0 bg-black/50 z-[120] justify-center items-center overscroll-contain">
+    <div
+      class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[600px] max-h-[90vh] overflow-hidden shadow-xl flex flex-col">
+      <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <h2 id="cartModalTitle" class="text-lg font-medium text-gray-800 m-0">Add Chromecart</h2>
+        <button onclick="closeCartModal()"
+          class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
+      </div>
+      <div class="overflow-y-auto flex-1 scroll-touch p-4">
+        <div class="flex gap-2.5 flex-wrap mb-4">
+          <div class="flex flex-col gap-1 w-20">
+            <label class="text-sm text-gray-500 font-medium">Cart #</label>
+            <input type="text" id="cartModalNumber" placeholder="#" autocomplete="off"
+              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+          </div>
+          <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
+            <label class="text-sm text-gray-500 font-medium">Cart Name</label>
+            <input type="text" id="cartModalName" placeholder="e.g. Smith" autocomplete="off"
+              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+          </div>
+          <div class="flex flex-col gap-1 w-28">
+            <label class="text-sm text-gray-500 font-medium">Room</label>
+            <input type="text" id="cartModalRoom" placeholder="e.g. 204" autocomplete="off"
+              class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
+          </div>
+        </div>
+
+        <div id="cartDevicesSection">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700">Devices</span>
+            <button type="button" onclick="addCartDevice()"
+              class="bg-gray-50 border border-gray-300 rounded px-3 py-1 text-xs cursor-pointer font-sans font-medium text-gray-500 hover:bg-primary-light hover:text-primary hover:border-primary transition-all duration-200">+
+              Add Device</button>
+          </div>
+          <div id="cartDeviceList" class="border border-gray-200 rounded-md overflow-hidden"></div>
+        </div>
+      </div>
+      <div
+        class="flex flex-col-reverse sm:flex-row justify-between gap-2.5 px-4 py-3 border-t border-gray-200 flex-shrink-0">
+        <button type="button" id="cartDeleteBtn"
+          class="bg-broken/10 text-broken px-4 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans text-sm border-none hover:bg-broken/20 transition-all duration-200 hidden"
+          onclick="deleteCart()">Delete Chromecart</button>
+        <div class="flex flex-col-reverse sm:flex-row gap-2.5">
+          <button type="button"
+            class="bg-gray-200 text-gray-700 px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200"
+            onclick="closeCartModal()">Cancel</button>
+          <button type="button" id="cartSaveBtn"
+            class="bg-primary text-white px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+            onclick="saveCartModal()">Save</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- SEARCH & TOOLBAR -->
-    <div class="bg-card rounded-lg shadow-sm mb-5 px-3 sm:px-[18px] py-3 sm:py-3.5 flex items-center gap-2 sm:gap-3 flex-wrap" id="toolbar" style="display:none;">
-      <div class="w-full sm:flex-1 sm:min-w-[200px] relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
-        <input type="text" id="teacherSearch" placeholder="Search for a chromecart..." oninput="onTeacherSearch()" autocomplete="off"
-          class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-[0.95em] box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white">
-      </div>
-      <div class="flex gap-2 flex-shrink-0 w-full sm:w-auto">
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
-          onclick="expandAll()">Expand All</button>
-        <button class="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 sm:py-2 text-sm cursor-pointer font-sans font-medium text-gray-500 whitespace-nowrap transition-all duration-200 hover:bg-primary-light hover:text-primary hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 flex-1 sm:flex-none"
-          onclick="collapseAll()">Collapse All</button>
-      </div>
-      <span class="text-sm text-gray-400 whitespace-nowrap" id="teacherCount"></span>
-      <select id="layoutSelect" onchange="changeLayout()" class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0 hidden sm:block">
-        <option value="1">1 Column</option>
-        <option value="2">2 Columns</option>
-        <option value="3">3 Columns</option>
-      </select>
-    </div>
+  <?!= include('JavaScript'); ?>
+</body>
 
-    <div id="loader" class="text-center mt-12 text-gray-500"><span class="spinner"></span>Loading Inventory...</div>
-    <div id="app" class="flex flex-col gap-4 max-w-[900px] mx-auto" style="display:none;"></div>
-
-    <!-- DEVICE EDIT MODAL -->
-    <div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] justify-center items-center overscroll-contain">
-      <div class="bg-white p-4 sm:p-6 rounded-lg w-[95%] sm:w-[90%] max-w-[480px] max-h-[85vh] sm:max-h-[90vh] overflow-y-auto shadow-xl scroll-touch">
-        <h2 id="modalTitle" class="mt-0 mb-2 text-lg font-medium text-gray-800">Device Details</h2>
-        <div id="modalDetails" class="mb-4 text-sm text-gray-500"></div>
-
-        <form id="updateForm">
-          <input type="hidden" id="rowIndex" name="rowIndex">
-          <input type="hidden" id="replacementSerial" name="replacementSerial" value="">
-          <input type="hidden" id="isCustomSerial" name="isCustomSerial" value="false">
-
-          <label class="block mt-4 text-sm text-gray-500 font-medium">Status</label>
-          <select id="statusSelect" name="status" onchange="toggleReplacement()"
-            class="w-full p-2.5 mt-1 border border-gray-300 rounded box-border font-sans text-sm">
-            <option value="Working">Working</option>
-            <option value="Broken">Broken / Needs Repair</option>
-          </select>
-
-          <div id="replacementContainer" style="display:none;">
-            <label class="block mt-4 text-sm text-gray-500 font-medium">Assign Replacement</label>
-
-            <!-- Source toggle: Pool vs Custom -->
-            <div class="flex mt-2 rounded-lg overflow-hidden border border-gray-300" id="serialSourceToggle">
-              <button type="button" id="tabPool"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white"
-                onclick="switchSerialSource('pool')">
-                From Pool
-              </button>
-              <button type="button" id="tabCustom"
-                class="flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                onclick="switchSerialSource('custom')">
-                Custom Serial
-              </button>
-            </div>
-
-            <!-- Pool selection panel -->
-            <div id="poolPanel">
-              <div class="relative mt-2">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">&#128269;</span>
-                <input
-                  type="text"
-                  id="poolSearch"
-                  placeholder="Search by serial or model..."
-                  oninput="filterPool()"
-                  autocomplete="off"
-                  class="w-full py-2.5 pl-9 pr-3.5 border border-gray-300 rounded-md font-sans text-sm box-border bg-gray-50 transition-all focus:outline-none focus:border-primary focus:bg-white m-0"
-                >
-              </div>
-
-              <div class="flex gap-2 mt-1.5 items-center justify-between">
-                <span class="text-xs text-gray-400" id="poolCount"></span>
-                <select class="py-1.5 px-2 border border-gray-300 rounded text-xs bg-gray-50 cursor-pointer font-sans flex-shrink-0"
-                  id="poolSort" onchange="filterPool()">
-                  <option value="serial-asc">Serial A-Z</option>
-                  <option value="serial-desc">Serial Z-A</option>
-                  <option value="model-asc">Model A-Z</option>
-                  <option value="model-desc">Model Z-A</option>
-                </select>
-              </div>
-
-              <div class="mt-2 max-h-[220px] overflow-y-auto border border-gray-300 rounded-md bg-gray-50/50 scroll-touch" id="poolList"></div>
-            </div>
-
-            <!-- Custom serial input panel (hidden by default) -->
-            <div id="customPanel" class="hidden">
-              <div class="mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p class="text-xs text-amber-700 mb-3 mt-0">Enter a serial number for a device not in the replacement pool. This serial will not be tracked in the pool inventory.</p>
-                <label class="block text-sm text-gray-600 font-medium !mt-0 mb-1" for="customSerialInput">Serial Number</label>
-                <input
-                  type="text"
-                  id="customSerialInput"
-                  placeholder="Enter serial number..."
-                  autocomplete="off"
-                  oninput="onCustomSerialInput()"
-                  class="w-full py-2.5 px-3 border border-gray-300 rounded-md font-mono text-sm box-border bg-white transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
-                >
-                <div id="customSerialValidation" class="text-xs mt-1.5 min-h-[1em]"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-6">
-            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="closeModal()">Cancel</button>
-            <button type="button" class="btn-save-update bg-primary text-white px-5 py-3 sm:py-2.5 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 w-full sm:w-auto" onclick="saveUpdate()">Save Update</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- CHROMECART EDIT MODAL -->
-    <div id="cartModalOverlay" class="hidden fixed inset-0 bg-black/50 z-[120] justify-center items-center overscroll-contain">
-      <div class="bg-white rounded-lg w-[95%] sm:w-[90%] max-w-[600px] max-h-[90vh] overflow-hidden shadow-xl flex flex-col">
-        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 flex-shrink-0">
-          <h2 id="cartModalTitle" class="text-lg font-medium text-gray-800 m-0">Add Chromecart</h2>
-          <button onclick="closeCartModal()" class="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none p-1 transition-colors">&times;</button>
-        </div>
-        <div class="overflow-y-auto flex-1 scroll-touch p-4">
-          <div class="flex gap-2.5 flex-wrap mb-4">
-            <div class="flex flex-col gap-1 w-20">
-              <label class="text-sm text-gray-500 font-medium">Cart #</label>
-              <input type="text" id="cartModalNumber" placeholder="#" autocomplete="off"
-                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
-            </div>
-            <div class="flex flex-col gap-1 flex-1 min-w-[140px]">
-              <label class="text-sm text-gray-500 font-medium">Cart Name</label>
-              <input type="text" id="cartModalName" placeholder="e.g. Smith" autocomplete="off"
-                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
-            </div>
-            <div class="flex flex-col gap-1 w-28">
-              <label class="text-sm text-gray-500 font-medium">Room</label>
-              <input type="text" id="cartModalRoom" placeholder="e.g. 204" autocomplete="off"
-                class="px-2.5 py-2 border border-gray-300 rounded font-sans text-sm w-full box-border">
-            </div>
-          </div>
-
-          <div id="cartDevicesSection">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-sm font-medium text-gray-700">Devices</span>
-              <button type="button" onclick="addCartDevice()"
-                class="bg-gray-50 border border-gray-300 rounded px-3 py-1 text-xs cursor-pointer font-sans font-medium text-gray-500 hover:bg-primary-light hover:text-primary hover:border-primary transition-all duration-200">+ Add Device</button>
-            </div>
-            <div id="cartDeviceList" class="border border-gray-200 rounded-md overflow-hidden"></div>
-          </div>
-        </div>
-        <div class="flex flex-col-reverse sm:flex-row justify-between gap-2.5 px-4 py-3 border-t border-gray-200 flex-shrink-0">
-          <button type="button" id="cartDeleteBtn" class="bg-broken/10 text-broken px-4 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans text-sm border-none hover:bg-broken/20 transition-all duration-200 hidden" onclick="deleteCart()">Delete Chromecart</button>
-          <div class="flex flex-col-reverse sm:flex-row gap-2.5">
-            <button type="button" class="bg-gray-200 text-gray-700 px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-gray-300 hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200" onclick="closeCartModal()">Cancel</button>
-            <button type="button" id="cartSaveBtn" class="bg-primary text-white px-5 py-2.5 sm:py-2 rounded cursor-pointer font-medium font-sans border-none hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200" onclick="saveCartModal()">Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      var globalData      = {};
-      var globalPool      = [];
-      var globalTeachers  = {};
-      var selectedReplacement = '';
-      var serialSource = 'pool';
-      var mgmtPanelOpen = false;
-      var auditModalOpen = false;
-      var auditLoaded = false;
-      var editingCartOriginalName = null;
-      var cartModalDevices = [];
-      var cartDeletedRows = [];
-      var darkMode = false;
-
-      // ── DARK MODE ──
-      function toggleDarkMode() {
-        darkMode = !darkMode;
-        document.body.classList.toggle('dark-mode', darkMode);
-        var icon = document.getElementById('darkModeIcon');
-        var label = document.getElementById('darkModeLabel');
-        if (darkMode) {
-          icon.innerHTML = '&#9788;';
-          label.innerText = 'Light Mode';
-        } else {
-          icon.innerHTML = '&#9789;';
-          label.innerText = 'Dark Mode';
-        }
-        try { localStorage.setItem('kcInventoryDarkMode', darkMode ? '1' : '0'); } catch(e) {}
-      }
-
-      // Restore preference on load
-      (function() {
-        try {
-          if (localStorage.getItem('kcInventoryDarkMode') === '1') {
-            darkMode = true;
-            document.body.classList.add('dark-mode');
-            var icon = document.getElementById('darkModeIcon');
-            var label = document.getElementById('darkModeLabel');
-            if (icon) icon.innerHTML = '&#9788;';
-            if (label) label.innerText = 'Light Mode';
-          }
-        } catch(e) {}
-      })();
-
-      // ── TOAST NOTIFICATIONS ──
-      function showToast(message, type) {
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-
-        var bgClass = 'bg-gray-700';
-        var iconText = '';
-        if (type === 'success') { bgClass = 'bg-good'; iconText = '\u2713 '; }
-        if (type === 'error')   { bgClass = 'bg-broken'; iconText = '\u2717 '; }
-        if (type === 'info')    { bgClass = 'bg-primary'; iconText = '\u2139 '; }
-
-        toast.className = bgClass + ' text-white text-sm px-4 py-3 rounded-lg shadow-lg pointer-events-auto';
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
-        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        toast.innerText = iconText + message;
-
-        container.appendChild(toast);
-
-        // Animate in
-        setTimeout(function() {
-          toast.style.opacity = '1';
-          toast.style.transform = 'translateX(0)';
-        }, 10);
-
-        // Auto-dismiss
-        var duration = type === 'error' ? 8000 : 5000;
-        setTimeout(function() {
-          toast.style.opacity = '0';
-          toast.style.transform = 'translateX(20px)';
-          setTimeout(function() {
-            if (toast.parentNode) container.removeChild(toast);
-          }, 300);
-        }, duration);
-      }
-
-      // ── INITIAL LOAD ──
-      window.onload = function() {
-        google.script.run
-          .withSuccessHandler(renderApp)
-          .withFailureHandler(function(err) {
-            var loader = document.getElementById('loader');
-            loader.innerHTML = '<span class="text-broken font-medium">Failed to load inventory.</span><br><span class="text-gray-400 text-sm">Please refresh the page. ' + escHtml(err.message || '') + '</span>';
-            showToast('Error loading data: ' + (err.message || err), 'error');
-          })
-          .getAppData();
-      };
-
-      // ── RENDER EVERYTHING ──
-      function renderApp(data) {
-        globalData     = data.inventory;
-        globalPool     = data.replacements;
-        globalTeachers = data.teacherRooms || {};
-
-        renderTeacherTable();
-        renderCards();
-      }
-
-      // ── CHROMECART MANAGEMENT PANEL ──
-      function toggleMgmtPanel() {
-        mgmtPanelOpen = !mgmtPanelOpen;
-        var body = document.getElementById('mgmtPanelBody');
-        var icon = document.getElementById('mgmtCollapseIcon');
-        var header = document.getElementById('mgmtPanelHeader');
-
-        if (mgmtPanelOpen) {
-          body.style.maxHeight = 'none';
-          body.style.opacity = '1';
-          body.style.paddingTop = '0';
-          body.style.paddingBottom = '0';
-          icon.style.transform = 'rotate(0deg)';
-          header.classList.add('border-b', 'border-gray-200');
-        } else {
-          body.style.maxHeight = '0';
-          body.style.opacity = '0';
-          body.style.paddingTop = '0';
-          body.style.paddingBottom = '0';
-          icon.style.transform = 'rotate(-90deg)';
-          header.classList.remove('border-b', 'border-gray-200');
-        }
-      }
-
-      function renderTeacherTable() {
-        var wrap = document.getElementById('teacherTableWrap');
-        // Merge chromecarts from both Teachers sheet and Inventory sheet
-        var keySet = {};
-        Object.keys(globalTeachers).forEach(function(k) { keySet[k] = true; });
-        Object.keys(globalData).forEach(function(k) { keySet[k] = true; });
-        var keys = Object.keys(keySet).sort(function(a, b) {
-          var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
-          var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
-          return numA !== numB ? numA - numB : a.localeCompare(b);
-        });
-
-        if (keys.length === 0) {
-          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No chromecarts added yet. Click "+ Add Chromecart" to create one.</p>';
-          return;
-        }
-
-        var html = '<table class="w-full border-collapse text-sm">' +
-          '<thead><tr>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-16">Cart #</th>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Cart Name</th>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium">Room</th>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-16">Devices</th>' +
-          '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium w-10"></th>' +
-          '</tr></thead><tbody>';
-
-        keys.forEach(function(name) {
-          var info = globalTeachers[name] || {};
-          var room = info.room || '\u2014';
-          var cartNum = info.cartNumber || '\u2014';
-          var devCount = (globalData[name] || []).length;
-          html += '<tr class="hover:bg-gray-50 transition-colors">' +
-            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700 font-medium">' + escHtml(cartNum) + '</td>' +
-            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(name) + '</td>' +
-            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
-            '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 text-center">' + devCount + '</td>' +
-            '<td class="py-2 px-2.5 border-b border-gray-100">' +
-              "<button class=\"bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200\" onclick='openCartModal(" +
-              JSON.stringify(name).replace(/'/g, "&#39;") + ")'>" + "Edit</button></td>" +
-            '</tr>';
-        });
-
-        html += '</tbody></table>';
-        wrap.innerHTML = html;
-      }
-
-      // ── CHROMECART EDIT MODAL ──
-      function openCartModal(cartName) {
-        editingCartOriginalName = cartName;
-        cartDeletedRows = [];
-
-        if (cartName) {
-          // Edit mode
-          var info = globalTeachers[cartName] || {};
-          document.getElementById('cartModalTitle').innerText = 'Edit Chromecart';
-          document.getElementById('cartModalNumber').value = info.cartNumber || '';
-          document.getElementById('cartModalName').value = cartName;
-          document.getElementById('cartModalRoom').value = info.room || '';
-          document.getElementById('cartDeleteBtn').classList.remove('hidden');
-          document.getElementById('cartDevicesSection').style.display = '';
-
-          cartModalDevices = (globalData[cartName] || []).map(function(d) {
-            return { rowIndex: d.rowIndex, slot: d.slot, serial: d.serial, model: d.model, status: d.status };
-          });
-        } else {
-          // Add mode
-          document.getElementById('cartModalTitle').innerText = 'Add Chromecart';
-          document.getElementById('cartModalNumber').value = '';
-          document.getElementById('cartModalName').value = '';
-          document.getElementById('cartModalRoom').value = '';
-          document.getElementById('cartDeleteBtn').classList.add('hidden');
-          document.getElementById('cartDevicesSection').style.display = 'none';
-          cartModalDevices = [];
-        }
-
-        renderCartDeviceList();
-        document.getElementById('cartModalOverlay').classList.remove('hidden');
-        document.getElementById('cartModalOverlay').style.display = 'flex';
-      }
-
-      function closeCartModal() {
-        document.getElementById('cartModalOverlay').style.display = 'none';
-        document.getElementById('cartModalOverlay').classList.add('hidden');
-        editingCartOriginalName = null;
-        cartModalDevices = [];
-        cartDeletedRows = [];
-      }
-
-      function renderCartDeviceList() {
-        var list = document.getElementById('cartDeviceList');
-        if (cartModalDevices.length === 0) {
-          list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No devices. Click "+ Add Device" to add one.</p>';
-          return;
-        }
-        var html = '';
-        cartModalDevices.forEach(function(dev, idx) {
-          html += '<div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-b-0 bg-white">' +
-            '<input type="text" value="' + escHtml(dev.slot || '') + '" placeholder="Slot" data-field="slot" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
-            '<input type="text" value="' + escHtml(dev.serial || '') + '" placeholder="Serial" data-field="serial" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="flex-1 min-w-0 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono box-border">' +
-            '<input type="text" value="' + escHtml(dev.model || '') + '" placeholder="Model" data-field="model" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-24 sm:w-32 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
-            '<button type="button" onclick="removeCartDevice(' + idx + ')" class="bg-transparent border-none text-gray-400 hover:text-broken cursor-pointer text-base leading-none p-1 transition-colors flex-shrink-0" title="Remove">&times;</button>' +
-            '</div>';
-        });
-        list.innerHTML = html;
-      }
-
-      function updateCartDevice(el) {
-        var idx = parseInt(el.getAttribute('data-idx'), 10);
-        var field = el.getAttribute('data-field');
-        if (cartModalDevices[idx]) cartModalDevices[idx][field] = el.value;
-      }
-
-      function addCartDevice() {
-        cartModalDevices.push({ rowIndex: null, slot: '', serial: '', model: '', status: 'Working' });
-        renderCartDeviceList();
-        // Focus the last slot input
-        var inputs = document.getElementById('cartDeviceList').querySelectorAll('input[data-field="slot"]');
-        if (inputs.length) inputs[inputs.length - 1].focus();
-      }
-
-      function removeCartDevice(idx) {
-        var dev = cartModalDevices[idx];
-        if (dev && dev.rowIndex) {
-          cartDeletedRows.push(dev.rowIndex);
-        }
-        cartModalDevices.splice(idx, 1);
-        renderCartDeviceList();
-      }
-
-      function saveCartModal() {
-        var name = document.getElementById('cartModalName').value.trim();
-        var room = document.getElementById('cartModalRoom').value.trim();
-        var cartNumber = document.getElementById('cartModalNumber').value.trim();
-
-        if (!name) {
-          showToast('Cart name is required.', 'error');
-          return;
-        }
-
-        var btn = document.getElementById('cartSaveBtn');
-        btn.disabled = true;
-        btn.innerText = 'Saving...';
-
-        function onSuccess() {
-          btn.disabled = false;
-          btn.innerText = 'Save';
-          closeCartModal();
-          showToast('Chromecart saved successfully.', 'success');
-          // Reload all data
-          document.getElementById('loader').style.display = 'block';
-          document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
-          document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
-          document.getElementById('app').style.display = 'none';
-          document.getElementById('toolbar').style.display = 'none';
-          google.script.run.withSuccessHandler(renderApp).withFailureHandler(function(err) {
-            document.getElementById('loader').style.display = 'none';
-            changeLayout();
-            document.getElementById('toolbar').style.display = 'flex';
-            showToast('Saved but refresh failed. Please reload.', 'error');
-          }).getAppData();
-        }
-
-        function onFailure(err) {
-          btn.disabled = false;
-          btn.innerText = 'Save';
-          showToast('Failed to save: ' + (err.message || err), 'error');
-        }
-
-        if (editingCartOriginalName) {
-          // Edit mode — use updateChromecart
-          google.script.run
-            .withSuccessHandler(onSuccess)
-            .withFailureHandler(onFailure)
-            .updateChromecart({
-              originalName: editingCartOriginalName,
-              name: name,
-              room: room,
-              cartNumber: cartNumber,
-              devices: cartModalDevices,
-              deletedRows: cartDeletedRows
-            });
-        } else {
-          // Add mode — use saveTeacher
-          google.script.run
-            .withSuccessHandler(function(result) {
-              if (result.status === 'error') {
-                onFailure({ message: result.message });
-                return;
-              }
-              onSuccess();
-            })
-            .withFailureHandler(onFailure)
-            .saveTeacher({ teacherName: name, roomNumber: room, cartNumber: cartNumber });
-        }
-      }
-
-      function deleteCart() {
-        if (!editingCartOriginalName) return;
-        if (!confirm('Delete chromecart "' + editingCartOriginalName + '"? This cannot be undone.')) return;
-
-        var btn = document.getElementById('cartDeleteBtn');
-        btn.disabled = true;
-        btn.innerText = 'Deleting...';
-
-        google.script.run
-          .withSuccessHandler(function() {
-            btn.disabled = false;
-            btn.innerText = 'Delete Chromecart';
-            closeCartModal();
-            showToast('Chromecart deleted.', 'success');
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
-            document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
-            document.getElementById('app').style.display = 'none';
-            document.getElementById('toolbar').style.display = 'none';
-            google.script.run.withSuccessHandler(renderApp).withFailureHandler(function() {
-              document.getElementById('loader').style.display = 'none';
-              changeLayout();
-              document.getElementById('toolbar').style.display = 'flex';
-            }).getAppData();
-          })
-          .withFailureHandler(function(err) {
-            btn.disabled = false;
-            btn.innerText = 'Delete Chromecart';
-            showToast('Failed to delete: ' + (err.message || err), 'error');
-          })
-          .deleteTeacher(editingCartOriginalName);
-      }
-
-      function setMgmtMsg(text, type) {
-        var el = document.getElementById('mgmtMsg');
-        el.innerText = text;
-        el.className = 'text-sm text-gray-400';
-        if (type === 'success') el.className = 'text-sm text-good';
-        if (type === 'error') el.className = 'text-sm text-broken';
-      }
-
-      // ── AUDIT LOG MODAL ──
-      function toggleAuditModal() {
-        auditModalOpen = !auditModalOpen;
-        var modal = document.getElementById('auditModal');
-
-        if (auditModalOpen) {
-          modal.classList.remove('hidden');
-          modal.style.display = 'flex';
-          if (!auditLoaded) loadAuditLog();
-        } else {
-          closeAuditModal();
-        }
-      }
-
-      function closeAuditModal() {
-        auditModalOpen = false;
-        var modal = document.getElementById('auditModal');
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-      }
-
-      function loadAuditLog() {
-        var wrap = document.getElementById('auditLogWrap');
-        var btn = document.getElementById('btnRefreshAudit');
-        wrap.innerHTML = '<div class="text-center py-4 text-gray-400"><span class="spinner"></span>Loading audit log...</div>';
-        btn.disabled = true;
-        btn.innerText = 'Loading...';
-
-        google.script.run
-          .withSuccessHandler(function(entries) {
-            btn.disabled = false;
-            btn.innerText = 'Refresh';
-            auditLoaded = true;
-            renderAuditLog(entries);
-          })
-          .withFailureHandler(function(err) {
-            btn.disabled = false;
-            btn.innerText = 'Refresh';
-            wrap.innerHTML = '<div class="text-center py-4 text-broken">Failed to load audit log: ' + escHtml(err.message || err) + '</div>';
-            showToast('Failed to load audit log.', 'error');
-          })
-          .getAuditLog(50);
-      }
-
-      function renderAuditLog(entries) {
-        var wrap = document.getElementById('auditLogWrap');
-        var countEl = document.getElementById('auditCount');
-
-        if (!entries || entries.length === 0) {
-          wrap.innerHTML = '<p class="text-gray-400 text-sm text-center py-3">No audit entries yet.</p>';
-          countEl.innerText = '0 entries';
-          return;
-        }
-
-        countEl.innerText = entries.length + ' recent entr' + (entries.length === 1 ? 'y' : 'ies');
-
-        var html = '<div class="max-h-[400px] overflow-y-auto border border-gray-200 rounded-md scroll-touch">';
-        html += '<table class="w-full border-collapse text-sm">';
-        html += '<thead class="sticky top-0 bg-white"><tr>';
-        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">When</th>';
-        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">Who</th>';
-        html += '<th class="text-left py-2 px-2 sm:px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium text-xs sm:text-sm">Action</th>';
-        html += '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium hidden sm:table-cell">Target</th>';
-        html += '<th class="text-left py-2 px-2.5 border-b-2 border-gray-200 text-gray-500 font-medium hidden md:table-cell">Details</th>';
-        html += '</tr></thead><tbody>';
-
-        entries.forEach(function(entry) {
-          var ts = entry.timestamp ? new Date(entry.timestamp) : null;
-          var timeStr = ts ? ts.toLocaleDateString() + ' ' + ts.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '\u2014';
-          var userShort = (entry.user || '').split('@')[0];
-
-          // Action badge color
-          var actionClass = 'bg-gray-100 text-gray-600';
-          if (entry.action && entry.action.indexOf('Update') !== -1) actionClass = 'bg-primary-light text-primary';
-          if (entry.action && entry.action.indexOf('Added') !== -1) actionClass = 'bg-green-50 text-good';
-          if (entry.action && entry.action.indexOf('Deleted') !== -1) actionClass = 'bg-broken-light text-broken';
-
-          html += '<tr class="hover:bg-gray-50 transition-colors">';
-          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100 text-gray-500 whitespace-nowrap text-xs">' + escHtml(timeStr) + '</td>';
-          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100 text-gray-700 text-xs">' + escHtml(userShort) + '</td>';
-          html += '<td class="py-2 px-2 sm:px-2.5 border-b border-gray-100"><span class="inline-block px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium ' + actionClass + '">' + escHtml(entry.action || '') + '</span></td>';
-          html += '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700 hidden sm:table-cell text-xs">' + escHtml(entry.target || '') + '</td>';
-          html += '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 hidden md:table-cell text-xs">' + escHtml(entry.details || '') + '</td>';
-          html += '</tr>';
-        });
-
-        html += '</tbody></table></div>';
-        wrap.innerHTML = html;
-      }
-
-      // ── CHROMECART SEARCH ──
-      function onTeacherSearch() {
-        var query = document.getElementById('teacherSearch').value.toLowerCase().trim();
-        var cards = document.querySelectorAll('.teacher-card');
-        var shown = 0;
-        var total = cards.length;
-
-        cards.forEach(function(card) {
-          var name = card.getAttribute('data-teacher').toLowerCase();
-          var room = (card.getAttribute('data-room') || '').toLowerCase();
-          var cartNum = (card.getAttribute('data-cart-number') || '').toLowerCase();
-          if (!query || name.indexOf(query) !== -1 || room.indexOf(query) !== -1 || cartNum.indexOf(query) !== -1) {
-            card.style.display = '';
-            shown++;
-          } else {
-            card.style.display = 'none';
-          }
-        });
-
-        var noResults = document.getElementById('noResults');
-        if (shown === 0 && total > 0) {
-          if (!noResults) {
-            noResults = document.createElement('div');
-            noResults.id = 'noResults';
-            noResults.className = 'text-center text-gray-400 text-[0.95em] py-10 bg-card rounded-lg shadow-sm';
-            document.getElementById('app').appendChild(noResults);
-          }
-          noResults.innerText = 'No chromecarts found matching "' + document.getElementById('teacherSearch').value.trim() + '"';
-          noResults.style.display = '';
-        } else if (noResults) {
-          noResults.style.display = 'none';
-        }
-
-        updateTeacherCount(shown, total);
-      }
-
-      function updateTeacherCount(shown, total) {
-        var el = document.getElementById('teacherCount');
-        if (shown === total) {
-          el.innerText = total + ' chromecart' + (total !== 1 ? 's' : '');
-        } else {
-          el.innerText = shown + ' of ' + total + ' chromecart' + (total !== 1 ? 's' : '');
-        }
-      }
-
-      // ── COLLAPSE / EXPAND ALL ──
-      function collapseAll() {
-        document.querySelectorAll('.teacher-card').forEach(function(card) {
-          collapseCard(card);
-        });
-      }
-
-      function expandAll() {
-        document.querySelectorAll('.teacher-card').forEach(function(card) {
-          expandCard(card);
-        });
-      }
-
-      function collapseCard(card) {
-        card.classList.add('collapsed');
-        var grid = card.querySelector('.slot-grid');
-        var header = card.querySelector('.teacher-header');
-        var icon = card.querySelector('.collapse-icon');
-        if (grid) {
-          grid.style.maxHeight = '0';
-          grid.style.opacity = '0';
-        }
-        if (header) {
-          header.classList.remove('border-b', 'border-gray-200');
-          header.classList.add('mb-0', 'pb-0');
-        }
-        if (icon) icon.style.transform = 'rotate(-90deg)';
-      }
-
-      function expandCard(card) {
-        card.classList.remove('collapsed');
-        var grid = card.querySelector('.slot-grid');
-        var header = card.querySelector('.teacher-header');
-        var icon = card.querySelector('.collapse-icon');
-        if (grid) {
-          grid.style.maxHeight = '2000px';
-          grid.style.opacity = '1';
-        }
-        if (header) {
-          header.classList.add('border-b', 'border-gray-200');
-          header.classList.remove('mb-0', 'pb-0');
-        }
-        if (icon) icon.style.transform = 'rotate(0deg)';
-      }
-
-      // ── LAYOUT ──
-      function changeLayout() {
-        var select = document.getElementById('layoutSelect');
-        var cols = select ? select.value : '1';
-        var app = document.getElementById('app');
-        if (cols === '1') {
-          app.className = 'flex flex-col gap-4 max-w-[900px] mx-auto';
-          app.style.gridTemplateColumns = '';
-          app.style.maxWidth = '';
-          app.style.display = 'flex';
-        } else {
-          app.className = 'grid gap-4 mx-auto';
-          app.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-          app.style.maxWidth = cols === '2' ? '1200px' : '1600px';
-          app.style.display = 'grid';
-        }
-      }
-
-      // ── RENDER CHROMECART CARDS ──
-      function renderCards() {
-        var app = document.getElementById('app');
-        app.innerHTML = '';
-
-        var teachers = Object.keys(globalData).sort(function(a, b) {
-          var numA = parseInt((globalTeachers[a] || {}).cartNumber) || 9999;
-          var numB = parseInt((globalTeachers[b] || {}).cartNumber) || 9999;
-          return numA !== numB ? numA - numB : a.localeCompare(b);
-        });
-
-        teachers.forEach(function(teacher) {
-          var info = globalTeachers[teacher] || {};
-          var room = info.room || '';
-          var cartNumber = info.cartNumber || '';
-
-          var card = document.createElement('div');
-          card.className = 'teacher-card bg-card rounded-lg shadow-sm p-3 sm:p-4';
-          card.setAttribute('data-teacher', teacher);
-          card.setAttribute('data-room', room);
-          card.setAttribute('data-cart-number', cartNumber);
-
-          // --- Collapsible Header ---
-          var header = document.createElement('div');
-          header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2 sm:mb-2.5 pb-2 cursor-pointer select-none';
-
-          var infoDiv = document.createElement('div');
-          infoDiv.className = 'flex-1 min-w-0';
-
-          // Cart number — large prominent text
-          var cartNumEl = document.createElement('div');
-          cartNumEl.className = 'text-xl font-bold text-gray-800 transition-colors';
-          cartNumEl.innerText = cartNumber ? 'Cart #' + cartNumber : teacher;
-          infoDiv.appendChild(cartNumEl);
-
-          // Subtitle: teacher name + room
-          var subtitleParts = [];
-          if (cartNumber) subtitleParts.push(teacher);
-          if (room) subtitleParts.push('Room ' + room);
-          if (subtitleParts.length) {
-            var subtitleEl = document.createElement('div');
-            subtitleEl.className = 'text-sm text-gray-500 mt-0.5';
-            subtitleEl.innerText = subtitleParts.join(' \u2022 ');
-            infoDiv.appendChild(subtitleEl);
-          }
-
-          var devices = globalData[teacher];
-          var brokenCount = devices.filter(function(d) { return d.status === 'Broken'; }).length;
-          var statsEl = document.createElement('div');
-          statsEl.className = 'text-xs text-gray-400 mt-1';
-          var statsText = devices.length + ' device' + (devices.length !== 1 ? 's' : '');
-          if (brokenCount > 0) {
-            statsText += ' \u2022 <span class="text-broken font-medium">' + brokenCount + ' broken</span>';
-          }
-          statsEl.innerHTML = statsText;
-          infoDiv.appendChild(statsEl);
-
-          // Right side: Edit button + collapse icon
-          var rightSide = document.createElement('div');
-          rightSide.className = 'flex items-center gap-2 flex-shrink-0 ml-2';
-
-          var editBtn = document.createElement('button');
-          editBtn.className = 'bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans font-medium hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200';
-          editBtn.innerText = 'Edit';
-          editBtn.onclick = function(e) {
-            e.stopPropagation();
-            openCartModal(teacher);
-          };
-
-          var icon = document.createElement('span');
-          icon.className = 'collapse-icon text-xs text-gray-400 transition-transform duration-300';
-          icon.innerHTML = '&#9660;';
-
-          rightSide.appendChild(editBtn);
-          rightSide.appendChild(icon);
-
-          header.appendChild(infoDiv);
-          header.appendChild(rightSide);
-          header.onclick = function() {
-            if (card.classList.contains('collapsed')) {
-              expandCard(card);
-            } else {
-              collapseCard(card);
-            }
-          };
-          header.onmouseenter = function() { cartNumEl.classList.add('text-primary'); };
-          header.onmouseleave = function() { cartNumEl.classList.remove('text-primary'); };
-
-          card.appendChild(header);
-
-          // --- Slot Grid ---
-          var grid = document.createElement('div');
-          grid.className = 'slot-grid grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2 overflow-hidden collapse-animate';
-          grid.style.maxHeight = '2000px';
-          grid.style.opacity = '1';
-
-          var sortedDevices = devices.sort(function(a, b) {
-            return parseInt(a.slot.replace('Slot ', '')) - parseInt(b.slot.replace('Slot ', ''));
-          });
-
-          sortedDevices.forEach(function(device) {
-            var chip = document.createElement('div');
-            var isBroken = device.status === 'Broken';
-            chip.className = 'py-3 sm:py-2 px-1.5 sm:px-1 rounded text-center cursor-pointer text-sm select-none transition-transform active:scale-95 ' +
-              (isBroken
-                ? 'bg-broken-light text-broken border border-broken'
-                : 'bg-primary-light text-primary');
-            chip.innerHTML = '<span class="block font-bold text-xs opacity-70">' + escHtml(device.slot) + '</span>' + escHtml(device.serial.substring(0, 6)) + '...';
-            chip.onclick = function() { openModal(device); };
-            grid.appendChild(chip);
-          });
-
-          card.appendChild(grid);
-          app.appendChild(card);
-        });
-
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('toolbar').style.display = 'flex';
-        changeLayout();
-
-        updateTeacherCount(teachers.length, teachers.length);
-      }
-
-      // ── SERIAL SOURCE TOGGLE ──
-      function switchSerialSource(source) {
-        serialSource = source;
-        var tabPool = document.getElementById('tabPool');
-        var tabCustom = document.getElementById('tabCustom');
-        var poolPanel = document.getElementById('poolPanel');
-        var customPanel = document.getElementById('customPanel');
-
-        if (source === 'pool') {
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
-          poolPanel.classList.remove('hidden');
-          customPanel.classList.add('hidden');
-          document.getElementById('customSerialInput').value = '';
-          document.getElementById('customSerialValidation').innerText = '';
-          document.getElementById('isCustomSerial').value = 'false';
-          document.getElementById('replacementSerial').value = selectedReplacement;
-        } else {
-          tabCustom.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-primary text-white';
-          tabPool.className = 'flex-1 py-2.5 sm:py-2 px-3 text-sm font-medium cursor-pointer border-none transition-all duration-200 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-800';
-          customPanel.classList.remove('hidden');
-          poolPanel.classList.add('hidden');
-          document.getElementById('isCustomSerial').value = 'true';
-          var customVal = document.getElementById('customSerialInput').value.trim();
-          document.getElementById('replacementSerial').value = customVal;
-        }
-      }
-
-      function onCustomSerialInput() {
-        var val = document.getElementById('customSerialInput').value.trim();
-        document.getElementById('replacementSerial').value = val;
-
-        var validationEl = document.getElementById('customSerialValidation');
-
-        if (!val) {
-          validationEl.innerText = '';
-          validationEl.className = 'text-xs mt-1.5 min-h-[1em]';
-          return;
-        }
-
-        var inPool = globalPool.some(function(item) {
-          return item.serial.toLowerCase() === val.toLowerCase();
-        });
-
-        if (inPool) {
-          validationEl.innerText = 'This serial exists in the replacement pool. Consider using "From Pool" instead.';
-          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-amber-600';
-        } else if (val.length < 3) {
-          validationEl.innerText = 'Serial number seems too short.';
-          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-amber-600';
-        } else {
-          validationEl.innerText = 'Custom serial will be assigned.';
-          validationEl.className = 'text-xs mt-1.5 min-h-[1em] text-good';
-        }
-      }
-
-      // ── DEVICE MODAL ──
-      function openModal(device) {
-        document.getElementById('modalTitle').innerText = device.teacher + ' - ' + device.slot;
-        document.getElementById('modalDetails').innerHTML =
-          'Model: ' + escHtml(device.model) + '<br>Serial: <b>' + escHtml(device.serial) + '</b><br>Current Status: ' + escHtml(device.status);
-
-        document.getElementById('rowIndex').value = device.rowIndex;
-        document.getElementById('statusSelect').value = device.status || 'Working';
-
-        // Reset all replacement controls
-        document.getElementById('poolSearch').value = '';
-        document.getElementById('poolSort').value = 'serial-asc';
-        document.getElementById('customSerialInput').value = '';
-        document.getElementById('customSerialValidation').innerText = '';
-        document.getElementById('isCustomSerial').value = 'false';
-        selectedReplacement = '';
-        serialSource = 'pool';
-        document.getElementById('replacementSerial').value = '';
-
-        switchSerialSource('pool');
-        filterPool();
-        toggleReplacement();
-
-        document.getElementById('modalOverlay').classList.remove('hidden');
-        document.getElementById('modalOverlay').style.display = 'flex';
-      }
-
-      function filterPool() {
-        var query  = document.getElementById('poolSearch').value.toLowerCase().trim();
-        var sortBy = document.getElementById('poolSort').value;
-
-        var filtered = globalPool.filter(function(item) {
-          if (!query) return true;
-          return item.serial.toLowerCase().indexOf(query) !== -1 ||
-                 item.model.toLowerCase().indexOf(query) !== -1;
-        });
-
-        filtered.sort(function(a, b) {
-          switch (sortBy) {
-            case 'serial-asc':  return a.serial.localeCompare(b.serial);
-            case 'serial-desc': return b.serial.localeCompare(a.serial);
-            case 'model-asc':   return a.model.localeCompare(b.model);
-            case 'model-desc':  return b.model.localeCompare(a.model);
-            default:            return 0;
-          }
-        });
-
-        var poolList = document.getElementById('poolList');
-        poolList.innerHTML = '';
-
-        if (filtered.length === 0) {
-          poolList.innerHTML = '<div class="text-center text-gray-400 text-sm py-5">' +
-            (query ? 'No devices matching "' + escHtml(query) + '"' : 'No available devices') +
-            '</div>';
-        } else {
-          filtered.forEach(function(item) {
-            var row = document.createElement('div');
-            var isSelected = selectedReplacement === item.serial;
-            row.className = 'flex items-center py-3 sm:py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
-              (isSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
-            row.setAttribute('data-serial', item.serial);
-
-            var radio = document.createElement('div');
-            radio.className = 'w-4 h-4 border-2 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ' +
-              (isSelected ? 'border-primary' : 'border-gray-300');
-            if (isSelected) {
-              var dot = document.createElement('div');
-              dot.className = 'w-2 h-2 bg-primary rounded-full';
-              radio.appendChild(dot);
-            }
-
-            var details = document.createElement('div');
-            details.className = 'flex-1 min-w-0';
-            var serialDiv = document.createElement('div');
-            serialDiv.className = 'text-sm text-gray-700 font-mono break-all';
-            serialDiv.textContent = item.serial;
-            var modelDiv = document.createElement('div');
-            modelDiv.className = 'text-xs text-gray-400 mt-px';
-            modelDiv.textContent = item.model;
-            details.appendChild(serialDiv);
-            details.appendChild(modelDiv);
-
-            row.appendChild(radio);
-            row.appendChild(details);
-
-            row.onclick = function() {
-              if (selectedReplacement === item.serial) {
-                selectedReplacement = '';
-              } else {
-                selectedReplacement = item.serial;
-              }
-              document.getElementById('replacementSerial').value = selectedReplacement;
-              var items = poolList.querySelectorAll('[data-serial]');
-              items.forEach(function(el) {
-                var elSerial = el.getAttribute('data-serial');
-                var elIsSelected = elSerial === selectedReplacement;
-                el.className = 'flex items-center py-3 sm:py-2.5 px-3 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors gap-2.5 ' +
-                  (elIsSelected ? 'bg-primary-hover font-medium' : 'hover:bg-primary-light');
-
-                var radioEl = el.querySelector('div:first-child');
-                radioEl.className = 'w-4 h-4 border-2 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ' +
-                  (elIsSelected ? 'border-primary' : 'border-gray-300');
-                radioEl.innerHTML = elIsSelected ? '<div class="w-2 h-2 bg-primary rounded-full"></div>' : '';
-              });
-            };
-
-            poolList.appendChild(row);
-          });
-        }
-
-        var total = globalPool.length;
-        var shown = filtered.length;
-        document.getElementById('poolCount').innerText =
-          shown === total
-            ? total + ' device' + (total !== 1 ? 's' : '') + ' available'
-            : shown + ' of ' + total + ' device' + (total !== 1 ? 's' : '') + ' shown';
-      }
-
-      function toggleReplacement() {
-        var status    = document.getElementById('statusSelect').value;
-        var container = document.getElementById('replacementContainer');
-        if (status === 'Broken') {
-          container.style.display = 'block';
-        } else {
-          container.style.display = 'none';
-          selectedReplacement = '';
-          document.getElementById('replacementSerial').value = '';
-          document.getElementById('customSerialInput').value = '';
-          document.getElementById('isCustomSerial').value = 'false';
-        }
-      }
-
-      function closeModal() {
-        document.getElementById('modalOverlay').style.display = 'none';
-        document.getElementById('modalOverlay').classList.add('hidden');
-      }
-
-      function saveUpdate() {
-        // Frontend validation
-        var rowIndex = document.getElementById('rowIndex').value;
-        if (!rowIndex || isNaN(parseInt(rowIndex, 10))) {
-          showToast('Invalid device reference. Please close and reopen the modal.', 'error');
-          return;
-        }
-
-        var status = document.getElementById('statusSelect').value;
-        if (status === 'Broken' && serialSource === 'custom') {
-          var customCheck = document.getElementById('customSerialInput').value.trim();
-          if (customCheck && customCheck.length < 3) {
-            showToast('Serial number is too short (minimum 3 characters).', 'error');
-            return;
-          }
-        }
-
-        var btn = document.querySelector('.btn-save-update');
-        if (btn) {
-          btn.innerText = 'Saving...';
-          btn.disabled  = true;
-        }
-
-        // Ensure the hidden field has the right value based on current source
-        if (serialSource === 'custom') {
-          var customVal = document.getElementById('customSerialInput').value.trim();
-          document.getElementById('replacementSerial').value = customVal;
-          document.getElementById('isCustomSerial').value = 'true';
-        } else {
-          document.getElementById('isCustomSerial').value = 'false';
-        }
-
-        var form = document.getElementById('updateForm');
-
-        google.script.run.withSuccessHandler(function() {
-          closeModal();
-          if (btn) {
-            btn.innerText = 'Save Update';
-            btn.disabled  = false;
-          }
-          showToast('Device updated successfully.', 'success');
-          document.getElementById('loader').style.display = 'block';
-          document.getElementById('loader').innerHTML = '<span class="spinner"></span>Refreshing...';
-          document.getElementById('loader').className = 'text-center mt-12 text-gray-500';
-          document.getElementById('app').style.display    = 'none';
-          document.getElementById('toolbar').style.display = 'none';
-          google.script.run
-            .withSuccessHandler(renderApp)
-            .withFailureHandler(function(err) {
-              document.getElementById('loader').style.display = 'none';
-              changeLayout();
-              document.getElementById('toolbar').style.display = 'flex';
-              showToast('Data saved but failed to refresh. Please reload the page.', 'error');
-            })
-            .getAppData();
-        }).withFailureHandler(function(err) {
-          if (btn) {
-            btn.innerText = 'Save Update';
-            btn.disabled  = false;
-          }
-          showToast('Error saving update: ' + (err.message || err), 'error');
-        }).submitUpdate(form);
-      }
-
-      // ── UTILITY ──
-      function escHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
-      }
-    </script>
-  </body>
 </html>
