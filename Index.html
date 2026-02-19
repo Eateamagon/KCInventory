@@ -59,12 +59,135 @@
       @media (max-width: 640px) {
         #app { grid-template-columns: 1fr !important; }
       }
+      /* ── DARK MODE ── */
+      body.dark-mode {
+        background-color: #121218 !important;
+        color: #e2e8f0 !important;
+      }
+      body.dark-mode .bg-card,
+      body.dark-mode .bg-white {
+        background-color: #1e1e2e !important;
+      }
+      body.dark-mode .bg-surface {
+        background-color: #121218 !important;
+      }
+      body.dark-mode .bg-gray-50 {
+        background-color: #262636 !important;
+      }
+      body.dark-mode .text-gray-800 {
+        color: #e2e8f0 !important;
+      }
+      body.dark-mode .text-gray-700 {
+        color: #cbd5e1 !important;
+      }
+      body.dark-mode .text-gray-600 {
+        color: #94a3b8 !important;
+      }
+      body.dark-mode .text-gray-500 {
+        color: #94a3b8 !important;
+      }
+      body.dark-mode .text-gray-400 {
+        color: #64748b !important;
+      }
+      body.dark-mode .border-gray-100 {
+        border-color: #2d2d3d !important;
+      }
+      body.dark-mode .border-gray-200 {
+        border-color: #333346 !important;
+      }
+      body.dark-mode .border-gray-300 {
+        border-color: #3d3d50 !important;
+      }
+      body.dark-mode .shadow-sm {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+      }
+      body.dark-mode .shadow-lg {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+      }
+      body.dark-mode .shadow-xl {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.6) !important;
+      }
+      body.dark-mode input,
+      body.dark-mode select,
+      body.dark-mode textarea {
+        background-color: #262636 !important;
+        color: #e2e8f0 !important;
+        border-color: #3d3d50 !important;
+      }
+      body.dark-mode input:focus,
+      body.dark-mode select:focus {
+        border-color: #1a73e8 !important;
+        background-color: #1e1e2e !important;
+      }
+      body.dark-mode input::placeholder {
+        color: #64748b !important;
+      }
+      body.dark-mode .hover\:bg-gray-50:hover {
+        background-color: #262636 !important;
+      }
+      body.dark-mode .hover\:bg-gray-100:hover {
+        background-color: #2d2d3d !important;
+      }
+      body.dark-mode .bg-primary-light {
+        background-color: #1a3a5c !important;
+      }
+      body.dark-mode .hover\:bg-primary-light:hover {
+        background-color: #1a3a5c !important;
+      }
+      body.dark-mode .bg-black\/50 {
+        background-color: rgba(0,0,0,0.7) !important;
+      }
+      body.dark-mode .bg-gray-200 {
+        background-color: #333346 !important;
+      }
+      body.dark-mode .text-white {
+        color: #ffffff !important;
+      }
+      body.dark-mode .spinner {
+        border-color: #3d3d50;
+        border-top-color: #1a73e8;
+      }
+      body.dark-mode #darkModeToggle {
+        background-color: #262636 !important;
+        border-color: #3d3d50 !important;
+      }
+      body.dark-mode .bg-broken-light {
+        background-color: #3b1c1c !important;
+      }
+      body.dark-mode .bg-amber-50 {
+        background-color: #352a10 !important;
+      }
+      body.dark-mode .border-amber-200 {
+        border-color: #5c4a1e !important;
+      }
+      body.dark-mode .text-amber-700 {
+        color: #d4a843 !important;
+      }
+      body.dark-mode .bg-gray-600 {
+        background-color: #3d3d50 !important;
+      }
+      body.dark-mode .hover\:bg-gray-300:hover {
+        background-color: #3d3d50 !important;
+      }
+      body.dark-mode .bg-gray-700 {
+        background-color: #1e1e2e !important;
+      }
     </style>
   </head>
   <body class="bg-surface font-sans m-0 p-3 sm:p-5">
 
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[200] flex flex-col gap-2 pointer-events-none sm:max-w-[380px]"></div>
+
+    <!-- DARK MODE TOGGLE -->
+    <div class="flex justify-end mb-3">
+      <button id="darkModeToggle" onclick="toggleDarkMode()"
+        class="bg-card border border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer font-sans font-medium text-gray-600 shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-200 flex items-center gap-2"
+        title="Toggle dark mode">
+        <span id="darkModeIcon" class="text-base leading-none">&#9789;</span>
+        <span id="darkModeLabel">Dark Mode</span>
+      </button>
+    </div>
 
     <!-- CHROMECART MANAGEMENT PANEL -->
     <div id="mgmtPanel" class="bg-card rounded-lg shadow-sm mb-6 overflow-hidden">
@@ -82,7 +205,7 @@
           <button class="bg-primary text-white px-4 py-2.5 sm:py-2 border-none rounded cursor-pointer font-medium font-sans text-sm whitespace-nowrap hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
             onclick="openCartModal(null)">+ Add Chromecart</button>
         </div>
-        <div id="teacherTableWrap" class="pb-[18px]"></div>
+        <div id="teacherTableWrap" class="pb-[18px] overflow-y-auto max-h-[60vh] scroll-touch"></div>
       </div>
     </div>
 
@@ -284,6 +407,37 @@
       var editingCartOriginalName = null;
       var cartModalDevices = [];
       var cartDeletedRows = [];
+      var darkMode = false;
+
+      // ── DARK MODE ──
+      function toggleDarkMode() {
+        darkMode = !darkMode;
+        document.body.classList.toggle('dark-mode', darkMode);
+        var icon = document.getElementById('darkModeIcon');
+        var label = document.getElementById('darkModeLabel');
+        if (darkMode) {
+          icon.innerHTML = '&#9788;';
+          label.innerText = 'Light Mode';
+        } else {
+          icon.innerHTML = '&#9789;';
+          label.innerText = 'Dark Mode';
+        }
+        try { localStorage.setItem('kcInventoryDarkMode', darkMode ? '1' : '0'); } catch(e) {}
+      }
+
+      // Restore preference on load
+      (function() {
+        try {
+          if (localStorage.getItem('kcInventoryDarkMode') === '1') {
+            darkMode = true;
+            document.body.classList.add('dark-mode');
+            var icon = document.getElementById('darkModeIcon');
+            var label = document.getElementById('darkModeLabel');
+            if (icon) icon.innerHTML = '&#9788;';
+            if (label) label.innerText = 'Light Mode';
+          }
+        } catch(e) {}
+      })();
 
       // ── TOAST NOTIFICATIONS ──
       function showToast(message, type) {
@@ -351,7 +505,7 @@
         var header = document.getElementById('mgmtPanelHeader');
 
         if (mgmtPanelOpen) {
-          body.style.maxHeight = '800px';
+          body.style.maxHeight = 'none';
           body.style.opacity = '1';
           body.style.paddingTop = '0';
           body.style.paddingBottom = '0';
