@@ -1,0 +1,169 @@
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#1a73e8',
+                    'primary-light': '#e8f0fe',
+                    'primary-hover': '#d2e3fc',
+                    broken: '#d93025',
+                    'broken-light': '#fce8e6',
+                    good: '#1e8e3e',
+                    surface: '#f1f3f4',
+                    card: '#ffffff',
+                },
+                fontFamily: {
+                    sans: ['Roboto', 'sans-serif'],
+                    mono: ['Roboto Mono', 'monospace'],
+                },
+            },
+        },
+    }
+</script>
+<style type="text/tailwindcss">
+    .collapse-animate {
+    transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #1a73e8;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  /* Mobile scrolling optimizations */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  body {
+    touch-action: manipulation;
+  }
+  #app {
+    touch-action: pan-y;
+  }
+  .teacher-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 200px;
+  }
+  @media (max-width: 640px) {
+    #app { grid-template-columns: 1fr !important; }
+  }
+  /* ── DARK MODE ── */
+  body.dark-mode {
+    background-color: #121218 !important;
+    color: #e2e8f0 !important;
+  }
+  body.dark-mode .bg-card,
+  body.dark-mode .bg-white {
+    background-color: #1e1e2e !important;
+  }
+  body.dark-mode .bg-surface {
+    background-color: #121218 !important;
+  }
+  body.dark-mode .bg-gray-50 {
+    background-color: #262636 !important;
+  }
+  body.dark-mode .text-gray-800 {
+    color: #e2e8f0 !important;
+  }
+  body.dark-mode .text-gray-700 {
+    color: #cbd5e1 !important;
+  }
+  body.dark-mode .text-gray-600 {
+    color: #94a3b8 !important;
+  }
+  body.dark-mode .text-gray-500 {
+    color: #94a3b8 !important;
+  }
+  body.dark-mode .text-gray-400 {
+    color: #64748b !important;
+  }
+  body.dark-mode .border-gray-100 {
+    border-color: #2d2d3d !important;
+  }
+  body.dark-mode .border-gray-200 {
+    border-color: #333346 !important;
+  }
+  body.dark-mode .border-gray-300 {
+    border-color: #3d3d50 !important;
+  }
+  body.dark-mode .shadow-sm {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+  }
+  body.dark-mode .shadow-lg {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  }
+  body.dark-mode .shadow-xl {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.6) !important;
+  }
+  body.dark-mode input,
+  body.dark-mode select,
+  body.dark-mode textarea {
+    background-color: #262636 !important;
+    color: #e2e8f0 !important;
+    border-color: #3d3d50 !important;
+  }
+  body.dark-mode input:focus,
+  body.dark-mode select:focus {
+    border-color: #1a73e8 !important;
+    background-color: #1e1e2e !important;
+  }
+  body.dark-mode input::placeholder {
+    color: #64748b !important;
+  }
+  body.dark-mode .hover\:bg-gray-50:hover {
+    background-color: #262636 !important;
+  }
+  body.dark-mode .hover\:bg-gray-100:hover {
+    background-color: #2d2d3d !important;
+  }
+  body.dark-mode .bg-primary-light {
+    background-color: #1a3a5c !important;
+  }
+  body.dark-mode .hover\:bg-primary-light:hover {
+    background-color: #1a3a5c !important;
+  }
+  body.dark-mode .bg-black\/50 {
+    background-color: rgba(0,0,0,0.7) !important;
+  }
+  body.dark-mode .bg-gray-200 {
+    background-color: #333346 !important;
+  }
+  body.dark-mode .text-white {
+    color: #ffffff !important;
+  }
+  body.dark-mode .spinner {
+    border-color: #3d3d50;
+    border-top-color: #1a73e8;
+  }
+  body.dark-mode #darkModeToggle {
+    background-color: #262636 !important;
+    border-color: #3d3d50 !important;
+  }
+  body.dark-mode .bg-broken-light {
+    background-color: #3b1c1c !important;
+  }
+  body.dark-mode .bg-amber-50 {
+    background-color: #352a10 !important;
+  }
+  body.dark-mode .border-amber-200 {
+    border-color: #5c4a1e !important;
+  }
+  body.dark-mode .text-amber-700 {
+    color: #d4a843 !important;
+  }
+  body.dark-mode .bg-gray-600 {
+    background-color: #3d3d50 !important;
+  }
+  body.dark-mode .hover\:bg-gray-300:hover {
+    background-color: #3d3d50 !important;
+  }
+  body.dark-mode .bg-gray-700 {
+    background-color: #1e1e2e !important;
+  }
+</style>
