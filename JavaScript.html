@@ -80,6 +80,15 @@
 
     // ── INITIAL LOAD ──
     window.onload = function () {
+        // Restore layout preference
+        try {
+            var savedLayout = localStorage.getItem('kcInventoryLayout');
+            if (savedLayout) {
+                var select = document.getElementById('layoutSelect');
+                if (select) select.value = savedLayout;
+            }
+        } catch (e) { }
+
         google.script.run
             .withSuccessHandler(renderApp)
             .withFailureHandler(function (err) {
@@ -161,7 +170,7 @@
                 '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-700">' + escHtml(room) + '</td>' +
                 '<td class="py-2 px-2.5 border-b border-gray-100 text-gray-500 text-center">' + devCount + '</td>' +
                 '<td class="py-2 px-2.5 border-b border-gray-100">' +
-                "<button class=\"bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200\" onclick='openCartModal(" +
+                "<button class=\"bg-transparent border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary-dark font-sans hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200\" onclick='openCartModal(" +
                 JSON.stringify(name).replace(/'/g, "&#39;") + ")'>" + "Edit</button></td>" +
                 '</tr>';
         });
@@ -434,7 +443,7 @@
 
             // Action badge color
             var actionClass = 'bg-gray-100 text-gray-600';
-            if (entry.action && entry.action.indexOf('Update') !== -1) actionClass = 'bg-primary-light text-primary';
+            if (entry.action && entry.action.indexOf('Update') !== -1) actionClass = 'bg-primary-light text-primary-dark';
             if (entry.action && entry.action.indexOf('Added') !== -1) actionClass = 'bg-green-50 text-good';
             if (entry.action && entry.action.indexOf('Deleted') !== -1) actionClass = 'bg-broken-light text-broken';
 
@@ -545,6 +554,7 @@
     function changeLayout() {
         var select = document.getElementById('layoutSelect');
         var cols = select ? select.value : '1';
+        try { localStorage.setItem('kcInventoryLayout', cols); } catch (e) { }
         var app = document.getElementById('app');
         if (cols === '1') {
             app.className = 'flex flex-col gap-4 max-w-[900px] mx-auto';
@@ -621,7 +631,7 @@
             rightSide.className = 'flex items-center gap-2 flex-shrink-0 ml-2';
 
             var editBtn = document.createElement('button');
-            editBtn.className = 'bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary font-sans font-medium hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200';
+            editBtn.className = 'bg-gray-50 border border-gray-300 rounded px-2.5 py-1.5 sm:py-1 text-xs cursor-pointer text-primary-dark font-sans font-medium hover:bg-primary-light hover:border-primary hover:shadow-sm hover:-translate-y-px active:translate-y-0 transition-all duration-200';
             editBtn.innerText = 'Edit';
             editBtn.onclick = function (e) {
                 e.stopPropagation();
@@ -644,8 +654,8 @@
                     collapseCard(card);
                 }
             };
-            header.onmouseenter = function () { cartNumEl.classList.add('text-primary'); };
-            header.onmouseleave = function () { cartNumEl.classList.remove('text-primary'); };
+            header.onmouseenter = function () { cartNumEl.classList.add('text-primary-dark'); };
+            header.onmouseleave = function () { cartNumEl.classList.remove('text-primary-dark'); };
 
             card.appendChild(header);
 
@@ -665,7 +675,7 @@
                 chip.className = 'py-3 sm:py-2 px-1.5 sm:px-1 rounded text-center cursor-pointer text-sm select-none transition-transform active:scale-95 ' +
                     (isBroken
                         ? 'bg-broken-light text-broken border border-broken'
-                        : 'bg-primary-light text-primary');
+                        : 'bg-primary-light text-primary-dark');
                 chip.innerHTML = '<span class="block font-bold text-xs opacity-70">' + escHtml(device.slot) + '</span>' + escHtml(device.serial.substring(0, 6)) + '...';
                 chip.onclick = function () { openModal(device); };
                 grid.appendChild(chip);
