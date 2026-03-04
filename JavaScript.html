@@ -151,6 +151,8 @@
         var icon = document.getElementById('mgmtCollapseIcon');
         var header = document.getElementById('mgmtPanelHeader');
 
+        header.setAttribute('aria-expanded', mgmtPanelOpen);
+
         if (mgmtPanelOpen) {
             body.style.maxHeight = 'none';
             body.style.opacity = '1';
@@ -265,10 +267,10 @@
         var html = '';
         cartModalDevices.forEach(function (dev, idx) {
             html += '<div class="flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-b-0 bg-white">' +
-                '<input type="text" value="' + escHtml(dev.slot || '') + '" placeholder="Slot" data-field="slot" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
-                '<input type="text" value="' + escHtml(dev.serial || '') + '" placeholder="Serial" data-field="serial" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="flex-1 min-w-0 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono box-border">' +
-                '<input type="text" value="' + escHtml(dev.model || '') + '" placeholder="Model" data-field="model" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-24 sm:w-32 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
-                '<button type="button" onclick="removeCartDevice(' + idx + ')" class="bg-transparent border-none text-gray-400 hover:text-broken cursor-pointer text-base leading-none p-1 transition-colors flex-shrink-0" title="Remove">&times;</button>' +
+                '<input type="text" value="' + escHtml(dev.slot || '') + '" placeholder="Slot" aria-label="Slot" data-field="slot" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-16 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
+                '<input type="text" value="' + escHtml(dev.serial || '') + '" placeholder="Serial" aria-label="Serial Number" data-field="serial" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="flex-1 min-w-0 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono box-border">' +
+                '<input type="text" value="' + escHtml(dev.model || '') + '" placeholder="Model" aria-label="Device Model" data-field="model" data-idx="' + idx + '" onchange="updateCartDevice(this)" class="w-24 sm:w-32 px-2 py-1.5 border border-gray-300 rounded text-xs font-sans box-border">' +
+                '<button type="button" onclick="removeCartDevice(' + idx + ')" class="bg-transparent border-none text-gray-400 hover:text-broken cursor-pointer text-base leading-none p-1 transition-colors flex-shrink-0" title="Remove" aria-label="Remove Device">&times;</button>' +
                 '</div>';
         });
         list.innerHTML = html;
@@ -685,6 +687,7 @@
         if (header) {
             header.classList.remove('border-b', 'border-gray-200');
             header.classList.add('mb-0', 'pb-0');
+            header.setAttribute('aria-expanded', 'false');
         }
         if (icon) icon.style.transform = 'rotate(-90deg)';
     }
@@ -701,6 +704,7 @@
         if (header) {
             header.classList.add('border-b', 'border-gray-200');
             header.classList.remove('mb-0', 'pb-0');
+            header.setAttribute('aria-expanded', 'true');
         }
         if (icon) icon.style.transform = 'rotate(0deg)';
     }
@@ -748,7 +752,10 @@
 
             // --- Collapsible Header ---
             var header = document.createElement('div');
-            header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2 sm:mb-2.5 pb-2 cursor-pointer select-none';
+            header.className = 'teacher-header flex justify-between items-start border-b border-gray-200 mb-2 sm:mb-2.5 pb-2 cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-t-lg';
+            header.setAttribute('role', 'button');
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('aria-expanded', 'true');
 
             var infoDiv = document.createElement('div');
             infoDiv.className = 'flex-1 min-w-0';
@@ -807,6 +814,16 @@
                     expandCard(card);
                 } else {
                     collapseCard(card);
+                }
+            };
+            header.onkeydown = function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (card.classList.contains('collapsed')) {
+                        expandCard(card);
+                    } else {
+                        collapseCard(card);
+                    }
                 }
             };
             header.onmouseenter = function () { cartNumEl.classList.add('text-primary-dark'); };
